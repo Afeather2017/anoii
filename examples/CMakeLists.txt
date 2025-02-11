@@ -1,0 +1,6 @@
+add_executable(echoserver echoserver.cc)
+target_link_libraries(echoserver anoii)
+add_executable(chargenserver chargenserver.cc)
+target_link_libraries(chargenserver anoii)
+add_executable(chargenclient chargenserver.cc)
+target_link_libraries(chargenclient anoii)
