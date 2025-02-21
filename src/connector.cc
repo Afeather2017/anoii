@@ -3,25 +3,24 @@
 #include <sys/socket.h>
 #include <unistd.h>
 
+#include <cassert>
 #include <cstring>
 
 #include "event_loop.h"
 #include "logger.h"
-#include "macros.h"
 #include "socket.h"
 #include "timer_queue.h"
 Connector::Connector(EventLoop *loop, const InetAddr &addr)
     : loop_{loop}, addr_{addr}, channel_{loop_} {}
 
 void Connector::Start() {
-  loop_->RunInLoop(std::bind(&Connector::ConnectOnce, this));
+  ConnectOnce();
 }
 
 void Connector::Connecting() {
-  ASSERT(fd_ >= 0, "Connector::Connecting: fd shall >= 0");
+  assert(fd_ >= 0);
   state_ = kConnecting;
-  channel_ = Channel(loop_, fd_);
-  channel_.DisableAll();
+  channel_.SetFd(fd_);
   channel_.SetWriteCallback(std::bind(&Connector::HandleWrite, this));
   channel_.SetErrorCallback(std::bind(&Connector::HandleError,
                                       this,
@@ -114,11 +113,10 @@ void Connector::StopInLoop() {
     fd_ = -1;
   }
   if (channel_.GetIndex() != -1) {
-    channel_.DisableAll();
-    loop_->RemoveChannel(&channel_);
+    RemoveAndResetChannel();
   }
-  stoped_ = true;
   if (timer_id_ != 0) loop_->CancelTimer(timer_id_);
+  timer_id_ = 0;
 }
 
 void Connector::Stop() {
@@ -135,8 +133,8 @@ void Connector::HandleError(long int write_ret, int err) {
   if (fd_ != -1) {
     ::close(fd_);
     fd_ = -1;
-    RemoveChannel();
   }
+  RemoveAndResetChannel();
 }
 
 static bool IsSelfConn(int sockfd) {
@@ -153,8 +151,7 @@ static bool IsSelfConn(int sockfd) {
     Error("getpeername failed: {}", strerror(errno));
     return false;
   }
-  ASSERT(local.sin_family == AF_INET && peer.sin_family == AF_INET,
-         "IsSelfConn: Incorrect sin_family");
+  assert(local.sin_family == AF_INET && peer.sin_family == AF_INET);
   return local.sin_addr.s_addr == peer.sin_addr.s_addr &&
          local.sin_port == peer.sin_port;
 }
@@ -166,28 +163,32 @@ void Connector::HandleWrite() {
     int err = GetSockError(fd_);
     if (err != 0) {
       Warn("Connect failed: {}", strerror(err));
-      RemoveChannel();
+      RemoveAndResetChannel();
       ::close(fd_);
       fd_ = -1;
       Retry();
     } else if (IsSelfConn(fd_)) {
       Warn("Self connection detected.");
-      RemoveChannel();
+      RemoveAndResetChannel();
       ::close(fd_);
       fd_ = -1;
       Retry();
     } else {
       state_ = kConnected;
-      RemoveChannel();
+      loop_->CancelTimer(timer_id_);
+      timer_id_ = 0;
+      RemoveAndResetChannel();
       new_conn_cb_(fd_, addr_);
+      fd_ = -1;
     }
   } else {
-    ASSERT(state_ == kDisconnected,
-           "Connector::HandleWrite: This shall never be reached.");
+    assert(state_ == kDisconnected);
   }
 }
 
-void Connector::RemoveChannel() {
+// 调用后，不能再对channel进行任何操作了。
+void Connector::RemoveAndResetChannel() {
   channel_.DisableAll();
   loop_->RemoveChannel(&channel_);
+  loop_->QueueInLoop(std::bind(&Channel::Reset, &channel_, loop_));
 }

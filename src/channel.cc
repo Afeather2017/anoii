@@ -1,6 +1,8 @@
 #include "channel.h"
 
 #include <poll.h>
+#include <functional>
+#include <cassert>
 
 #include "event_loop.h"
 #include "logger.h"
@@ -11,7 +13,7 @@ const int Channel::kWriteEvent = POLLOUT;
 void Channel::Handle() {
   is_handling_events_ = true;
   if (revents_ & POLLNVAL) {
-    Warn("fd=%d is invalid", fd_);
+    Warn("fd={} is invalid", fd_);
   }
   if (revents_ & (POLLIN | POLLPRI | POLLRDNORM | POLLRDBAND)) {
     if (read_cb_) read_cb_();
@@ -29,7 +31,15 @@ void Channel::Handle() {
 }
 void Channel::Update() { loop_->UpdateChannel(this); }
 Channel::~Channel() {
-  FatalIf(is_handling_events_,
-          "fd={} channel dtor called during event handling",
-          fd_);
+  assert(events_ == 0);
+  assert(!is_handling_events_);
+}
+void Channel::Reset(EventLoop *loop) {
+  assert(events_ == 0);
+  assert(!is_handling_events_);
+  // 如果构造函数确保了成员都初始化了，
+  // 那么这种做法可以避免某些成员没有初始化到。
+  // 分别设置成员的做法不太合适。
+  Channel another{loop};
+  *this = std::move(another);
 }

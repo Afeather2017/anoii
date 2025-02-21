@@ -43,10 +43,6 @@ class TcpConnection final : public std::enable_shared_from_this<TcpConnection> {
       const std::function<void(std::shared_ptr<TcpConnection>)> &cb) {
     close_cb_ = cb;
   }
-  void SetErrorCallback(
-      const std::function<void(std::shared_ptr<TcpConnection>)> &cb) {
-    error_cb_ = cb;
-  }
   auto GetPeer() { return peer_; }
   void OnEstablished();
   void DestroyConnection();
@@ -78,6 +74,5 @@ class TcpConnection final : public std::enable_shared_from_this<TcpConnection> {
   std::function<void(std::shared_ptr<TcpConnection>, Buffer *)> readable_cb_;
   std::function<void(std::shared_ptr<TcpConnection>)> write_cb_;
   std::function<void(std::shared_ptr<TcpConnection>)> close_cb_;
-  std::function<void(std::shared_ptr<TcpConnection>)> error_cb_;
 };
 #endif  // TCP_CONNECTION_H

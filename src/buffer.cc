@@ -67,3 +67,13 @@ void Buffer::Prepend(const char *data, int size) {
   head_ -= size;
   std::copy(data, data + size, data_.data() - head_);
 }
+bool Buffer::StartWith(const char *data, int size) {
+  if (ReadableBytes() < size) return false;
+  return memcmp(data, begin(), size);
+}
+bool Buffer::Contains(char ch) {
+  for (int i = head_; i < tail_; i++) {
+    if (data_[i] == ch) return true;
+  }
+  return false;
+}

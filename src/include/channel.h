@@ -2,6 +2,7 @@
 #ifndef CHANNEL_H
 #define CHANNEL_H
 #include <functional>
+#include <string>
 
 #include "macros.h"
 class EventLoop;
@@ -14,9 +15,9 @@ class Channel final {
   DISALLOW_COPY(Channel);
   Channel(EventLoop *loop, int fd) : loop_{loop}, fd_{fd} {}
   Channel(EventLoop *loop) : loop_{loop} {}
-  Channel &operator=(Channel &&ch) = default;
   ~Channel();
   void SetFd(int fd) { fd_ = fd; }
+  void Reset(EventLoop *loop);
   void Handle();
   EventLoop *GetLoop() { return loop_; }
   void EnableRead() {
@@ -52,11 +53,17 @@ class Channel final {
     events_ = 0;
     Update();
   }
+  std::string to_string() {
+    char buf[1024];
+    sprintf(buf, "%p{fd=%d,events=%hx}", this, fd_, events_);
+    return buf;
+  }
   static const int kNoEvent;
   static const int kReadEvent;
   static const int kWriteEvent;
 
  private:
+  DEFAULT_MOVE(Channel); // 用以实现Reset方法
   void Update();
   std::function<void()> read_cb_{};
   std::function<void()> write_cb_{};

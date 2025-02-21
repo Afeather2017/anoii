@@ -31,8 +31,10 @@ EventLoop::EventLoop(const char *poll_type, size_t size_hint)
 }
 
 EventLoop::~EventLoop() {
-  loop_of_thread = nullptr;
+  wakeup_channel_->DisableAll();
+  RemoveChannel(wakeup_channel_.get());
   close(wakeup_fd);
+  loop_of_thread = nullptr;
 }
 
 void EventLoop::Loop() {

@@ -3,6 +3,7 @@
 #include <sys/time.h>
 
 #include <cstdio>
+#include <cassert>
 
 #include "current_thread.h"
 #include "event_loop.h"
@@ -16,7 +17,7 @@ class Timer {
   void Cancel() {
     // 隐藏它的原因:
     // Cancel不具有幂等性，调用一次之后，第二次就不能再调用了！
-    ASSERT(timer_id_ > 0, "Timer cannot cancel twice!");
+    assert(timer_id_ > 0);
     // 所有Timer都是在其所属的EventLoop中调用回调cb与Cancel的，
     // 所以Cancel直接设置id无效是可行的，哪怕是某个Timer取消掉
     // 另一个Timer，或者自己取消自己
@@ -43,6 +44,12 @@ void TimerQueue::Cancel(TimerId id) {
     Debug("Tries to cancel timer {} that is not existed", std::abs(id));
     return;
   }
+  // 在取消之后，Timer id被设置，但是不一定从in_use_中移除了。
+  if (iter->second->timer_id_ <= 0) {
+    Debug("Tries to cancel timer {} twice", std::abs(id));
+    return;
+  }
+  // FIXME: 如果一个timer定时在十年以后，那么取消后，真正的内存释放将会发生在十年以后
   iter->second->Cancel();
 }
 

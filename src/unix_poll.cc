@@ -64,6 +64,7 @@ void UPoll::UpdateChannel(Channel *channel) {
   loop_->AssertIfOutLoopThread();
   // 新创建的，没有加入到poller中的channel，index必须小于0
   if (channel->GetIndex() < 0) {
+    assert(channel->GetFd() >= 0);
     assert(fd_channels_.find(channel->GetFd()) == fd_channels_.cend());
     channel->SetIndex(plfds_.size());
     struct pollfd pfd{};

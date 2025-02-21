@@ -40,6 +40,8 @@ TcpConnection::TcpConnection(EventLoop *loop,
     : loop_{loop}, local_{local}, peer_{peer}, channel_{loop, sockfd} {
   id_ = id;
   fd_ = sockfd;
+  assert(fd_ >= 0);
+  Debug("TcpConnection {}: Channel@{} created", id_, channel_.to_string());
   channel_.SetCloseCallback(std::bind(&TcpConnection::HandleClose, this));
   channel_.SetReadCallback(std::bind(&TcpConnection::HandleRead, this));
   channel_.SetWriteCallback(std::bind(&TcpConnection::HandleWrite, this));
@@ -52,7 +54,6 @@ TcpConnection::TcpConnection(EventLoop *loop,
   SetWriteCompleteCallback(DefaultWriteCb);
   SetConnectionCallback(DefaultConnCb);
   SetCloseCallback(DefaultCloseCb);
-  SetErrorCallback(DefaultErrorCb);
   SetState(kConnecting);
   input_buffer_ = std::make_unique<Buffer>(1024, 0);
   output_buffer_ = std::make_unique<Buffer>(1024, 8);
@@ -114,6 +115,8 @@ void TcpConnection::HandleClose() {
   // FIXME: 此处直接DisableAll，可能会导致可写入事件不再发生。
   // 在output_buffer中可能残留部分数据将不会再发送。
   channel_.DisableAll();
+  loop_->RemoveChannel(&channel_);
+  Debug("TcpConnection {}: Channel@{} removed", id_, channel_.to_string());
   close_cb_(shared_from_this());
 }
 
@@ -137,7 +140,7 @@ void TcpConnection::Send(const char *data, size_t size) {
 
 void TcpConnection::SendUnsafe(const char *data, size_t size) {
   loop_->AssertIfOutLoopThread();
-  ASSERT(write_cb_, "write complete cb called but not set");
+  assert(write_cb_);
   // 竞态条件：
   // 不能够仅仅探测 channel 是否正在写入。
   // HandleWrite处，当输出buffer为空时，会关闭关闭IsWriting。
@@ -188,8 +191,8 @@ void TcpConnection::ShutdownUnsafe() {
 }
 
 void TcpConnection::OnEstablished() {
-  assert(GetState() == kConnecting);
   auto self = shared_from_this();
+  assert(GetState() == kConnecting);
   SetState(kEstablished);
   if (conn_cb_) conn_cb_(self);
 }

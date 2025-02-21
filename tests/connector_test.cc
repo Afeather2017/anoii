@@ -19,6 +19,9 @@ void NewConn(std::shared_ptr<TcpConnection> conn,
   loop.QueueInLoop([] { loop.Quit(); });
 }
 int main(int argc, char **argv) {
+  if (argc < 3) {
+    return 0;
+  }
   // 1. 连接测试
   InetAddr addr{argv[1], static_cast<uint16_t>(::atoi(argv[2]))};
   Connector ctr{&loop, addr};
@@ -27,6 +30,6 @@ int main(int argc, char **argv) {
       [&conn](int fd, const InetAddr &peer) { NewConn(conn, fd, peer); });
   ctr.Start();
   loop.Loop();
-  // 2. Connector析构后，Timer也许要取消
+  // 2. Connector析构后，Timer也要取消
   return 0;
 }

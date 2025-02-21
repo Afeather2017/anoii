@@ -5,7 +5,7 @@
 #include <sys/types.h>
 
 #include <string>
-int main() {
+void Test1() {
   int prepend = 8;
   Buffer buf(10, prepend);
   std::string s{"abcdefg"};
@@ -21,4 +21,7 @@ int main() {
   for (int i = 0; i < s.size(); i++) {
     assert(p[i] == s[i]);
   }
+}
+int main() {
+  Test1();
 }

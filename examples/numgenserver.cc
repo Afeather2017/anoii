@@ -11,22 +11,36 @@
 #include "tcp_connection.h"
 #include "tcp_server.h"
 long long written = 0;
-static const int char_size = 127 - 33;
-static char tmp[20000 / char_size * char_size];
-static char charset[char_size];
 void WriteCb(std::shared_ptr<TcpConnection> conn) {
-  for (int i = 0; i < sizeof(tmp); i++) {
-    tmp[i] = charset[i % char_size];
+  // static const int char_size = 127 - 33;
+  // static char tmp[65536 / char_size * char_size];
+  // static char charset[char_size];
+  // for (int i = 0; i < char_size; i++) {
+  //   charset[i] = i + 33;
+  // }
+  // for (int i = 0; i < sizeof(tmp); i++) {
+  //   tmp[i] = charset[i % char_size];
+  // }
+  const int nums_could_place = 1024 * 100;  // 1000K
+  const int size = nums_could_place * 20;
+  static char tmp[size + 1];
+  static long long val = 1e9 * 1e9;  // 长度是9 + 9 + 1 = 19
+  for (int i = 0, j = 0; j < nums_could_place; j++) {
+    int len = sprintf(tmp + i, " %19lld", val++);
+    i += len;
   }
-  written += sizeof(tmp);
-  conn->Send(tmp, sizeof(tmp));
+  Trace("About write {} bytes to {}", size, conn->GetPeer().GetAddr());
+  written += size;
+  for (int i = 0; i < size; i++)
+    assert(tmp[i]);
+  conn->Send(tmp, size);
 }
 void ConnCb(std::shared_ptr<TcpConnection> conn) {
   switch (conn->GetState()) {
     case TcpConnection::kConnecting: break;
     case TcpConnection::kEstablished:
-      conn->Send(charset, sizeof(charset));
-      written += sizeof(charset);
+      conn->Send("abcd", 4);
+      written += 4;
       break;
     case TcpConnection::kHalfShutdown: break;
     case TcpConnection::kDisconnected: break;
@@ -34,14 +48,11 @@ void ConnCb(std::shared_ptr<TcpConnection> conn) {
   }
 }
 mstime_t TimerCb(mstime_t now) {
-  fmt::println("{:.3f}MB/s", written / 1024. / 1024);
+  Info("{:.3f}MB/s", written / 1024. / 1024);
   written = 0;
   return 1000;
 }
 int main() {
-  for (int i = 0; i < char_size; i++) {
-    charset[i] = i + 33;
-  }
   signal(SIGPIPE, SIG_IGN);
   InetAddr addr{9997};
   EventLoop loop{};
@@ -50,5 +61,4 @@ int main() {
   srv.SetConnectionCallback(ConnCb);
   loop.AddTimer(TimerCb, 1000);
   loop.Loop();
-
 }
