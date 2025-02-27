@@ -1,10 +1,12 @@
 #pragma once
 #include <functional>
+
 #include "inet_addr.h"
 #ifndef TCP_CLIENT_H
 #define TCP_CLIENT_H
-#include "macros.h"
 #include <memory>
+
+#include "macros.h"
 class EventLoop;
 class Connector;
 class TcpConnection;
@@ -26,6 +28,7 @@ class TcpClient final {
       std::function<void(std::shared_ptr<TcpConnection>)> cb) {
     write_cb_ = cb;
   }
+
  private:
   void NewConnection(int fd, const InetAddr &addr);
   void HandleClose();

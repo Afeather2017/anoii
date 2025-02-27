@@ -1,8 +1,8 @@
 /*
  * 一个简单的chargen服务，用以生成数字，供numgenclient校验
  */
-#include <csignal>
 #include <cassert>
+#include <csignal>
 #include <memory>
 
 #include "event_loop.h"
@@ -31,8 +31,7 @@ void WriteCb(std::shared_ptr<TcpConnection> conn) {
   }
   Trace("About write {} bytes to {}", size, conn->GetPeer().GetAddr());
   written += size;
-  for (int i = 0; i < size; i++)
-    assert(tmp[i]);
+  for (int i = 0; i < size; i++) assert(tmp[i]);
   conn->Send(tmp, size);
 }
 void ConnCb(std::shared_ptr<TcpConnection> conn) {

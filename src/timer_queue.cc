@@ -2,8 +2,8 @@
 
 #include <sys/time.h>
 
-#include <cstdio>
 #include <cassert>
+#include <cstdio>
 
 #include "current_thread.h"
 #include "event_loop.h"
@@ -49,7 +49,8 @@ void TimerQueue::Cancel(TimerId id) {
     Debug("Tries to cancel timer {} twice", std::abs(id));
     return;
   }
-  // FIXME: 如果一个timer定时在十年以后，那么取消后，真正的内存释放将会发生在十年以后
+  // FIXME:
+  // 如果一个timer定时在十年以后，那么取消后，真正的内存释放将会发生在十年以后
   iter->second->Cancel();
 }
 

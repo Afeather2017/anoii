@@ -2,6 +2,7 @@
 #include <limits>
 #include <memory>
 #include <string_view>
+
 #include "buffer.h"
 #include "event_loop.h"
 #include "tcp_client.h"
@@ -20,8 +21,7 @@ void ReadCb(std::shared_ptr<TcpConnection> conn, Buffer *buf) {
   uint64_t v = 0;
   while (buf->ReadableBytes() >= 20) {
     sscanf(buf->begin(), "%lu", &v);
-    if (last != std::numeric_limits<uint64_t>::max())
-      assert(v == last + 1);
+    if (last != std::numeric_limits<uint64_t>::max()) assert(v == last + 1);
     last = v;
     buf->Pop(20);
   }

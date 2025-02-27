@@ -1,8 +1,8 @@
 /*
  * 一个简单的chargen服务，用以生成数字，供numgenclient校验
  */
-#include <csignal>
 #include <cassert>
+#include <csignal>
 #include <memory>
 
 #include "event_loop.h"
@@ -50,5 +50,4 @@ int main() {
   srv.SetConnectionCallback(ConnCb);
   loop.AddTimer(TimerCb, 1000);
   loop.Loop();
-
 }

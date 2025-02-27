@@ -32,14 +32,21 @@ add_subdirectory(src)
 add_subdirectory(tests)
 add_subdirectory(examples)
 
-include(ClangFormat)
+# 添加一个选项，默认关闭 ClangFormat
+option(ENABLE_CLANGFORMAT "Enable ClangFormat formatting" OFF)
 
-clangformat_setup(
-  "src/*.cc"
-  "src/include/*.h"
-  "examples/*.cc"
-  "tests/*.cc"
-)
+if(ENABLE_CLANGFORMAT)
+  include(ClangFormat)
+  clangformat_setup(
+    "src/*.cc"
+    "src/include/*.h"
+    "examples/*.cc"
+    "tests/*.cc"
+  )
+  message(STATUS "ClangFormat enabled.")
+else()
+  message(STATUS "ClangFormat disabled.")
+endif()
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_VERBOSE_MAKEFILE ON)

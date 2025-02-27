@@ -22,6 +22,4 @@ void Test1() {
     assert(p[i] == s[i]);
   }
 }
-int main() {
-  Test1();
-}
+int main() { Test1(); }

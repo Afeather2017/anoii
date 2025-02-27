@@ -18,6 +18,7 @@ set(ANOII_SOURCES
   buffer.cc
   connector.cc
   tcp_client.cc
+  epoller.cc
 )
 add_library(anoii ${ANOII_SOURCES})
 target_include_directories(anoii PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include/)

@@ -13,9 +13,7 @@
 Connector::Connector(EventLoop *loop, const InetAddr &addr)
     : loop_{loop}, addr_{addr}, channel_{loop_} {}
 
-void Connector::Start() {
-  ConnectOnce();
-}
+void Connector::Start() { ConnectOnce(); }
 
 void Connector::Connecting() {
   assert(fd_ >= 0);

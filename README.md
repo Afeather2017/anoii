@@ -2,6 +2,18 @@
 
 高效网络库
 
+## 功能目标
+
+- [x] TCP
+- [x] 支持Linux，支持安卓
+- [ ] 支持Windows
+- [ ] UDP
+- [ ] tunnel加密通道
+- [ ] 多线程支持
+- [ ] fb制作简易的Linux图形界面
+- [ ] 更多与其他库结合的例子
+- [ ] ...
+
 ## 编译
 
 ### linux x86 x64
@@ -48,5 +60,5 @@ executable's TLS segment is underaligned: alignment is 8 (skew 0), needs to be a
 
 2. debug模式编译 `-DCMAKE_BUILD_TYPE=Debug`
 
-3. 导出编译命令 `CMAKE_EXPORT_COMPILE_COMMANDS=ON`
+3. 导出编译命令 `-DCMAKE_EXPORT_COMPILE_COMMANDS=ON`
 

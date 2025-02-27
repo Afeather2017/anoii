@@ -1,8 +1,9 @@
 #include "channel.h"
 
 #include <poll.h>
-#include <functional>
+
 #include <cassert>
+#include <functional>
 
 #include "event_loop.h"
 #include "logger.h"

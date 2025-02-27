@@ -1,7 +1,9 @@
 #include "tcp_client.h"
+
 #include <functional>
-#include "event_loop.h"
+
 #include "connector.h"
+#include "event_loop.h"
 #include "inet_addr.h"
 #include "socket.h"
 #include "tcp_connection.h"
@@ -41,4 +43,3 @@ void TcpClient::HandleClose() {
     connector_->Start();
   }
 }
-

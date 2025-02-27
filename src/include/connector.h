@@ -11,9 +11,7 @@ class Connector {
  public:
   DISALLOW_COPY(Connector);
   Connector(EventLoop *loop, const InetAddr &addr);
-  ~Connector() {
-    Stop();
-  }
+  ~Connector() { Stop(); }
   void SetNewConnCb(const std::function<void(int fd, const InetAddr &)> &cb) {
     new_conn_cb_ = cb;
   }

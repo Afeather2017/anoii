@@ -63,7 +63,7 @@ class Channel final {
   static const int kWriteEvent;
 
  private:
-  DEFAULT_MOVE(Channel); // 用以实现Reset方法
+  DEFAULT_MOVE(Channel);  // 用以实现Reset方法
   void Update();
   std::function<void()> read_cb_{};
   std::function<void()> write_cb_{};
