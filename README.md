@@ -7,7 +7,7 @@
 - [x] TCP
 - [x] 支持Linux，支持安卓
 - [ ] 支持Windows
-- [ ] UDP
+- [x] UDP
 - [ ] tunnel加密通道
 - [ ] 多线程支持
 - [ ] fb制作简易的Linux图形界面
@@ -21,8 +21,16 @@
 ```shell
 mkdir x86_64
 cd x86_64
-cmake ..
+cmake -DCMAKE_BUILD_TYPE=Release ..
 ```
+
+编译之后tcp loopback测试结果：
+```shell
+bin/chargenserver | grep MB
+bin/chargenclient 0.0.0.0 9997 > /dev/null
+```
+
+![alt text](img/chargen_test.png)
 
 ### 安卓
 
@@ -35,8 +43,10 @@ cmake ..
 ```shell
 mkdir android
 cd android
-cmake -DCMAKE_C_COMPILER=/opt/android-ndk/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android30-clang  -DCMAKE_CXX_COMPILER=/opt/android-ndk/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android30-clang++ -DCMAKE_VERBOSE_MAKEFILE=ON ../
+cmake -DCMAKE_C_COMPILER=/opt/android-ndk/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android30-clang  -DCMAKE_CXX_COMPILER=/opt/android-ndk/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android30-clang++ -DCMAKE_VERBOSE_MAKEFILE=ON -DCMAKE_C_FLAGS=-static -DCMAKE_CXX_FLAGS=-static ../
 ```
+
+已使用wifi6测试，速度已经达到千兆
 
 ### arm linux
 
@@ -46,7 +56,7 @@ cd arm
 cmake -DCMAKE_C_COMPILER=arm-linux-gnueabihf-gcc -DCMAKE_CXX_COMPILER=arm-linux-gnueabihf-g++ ..
 ```
 
-### 其他cmake参数
+### 其他cmake命令与参数
 
 1. 静态连接 `-DCMAKE_C_FLAGS=-static -DCMAKE_CXX_FLAGS=-static`
 
@@ -58,7 +68,24 @@ cmake -DCMAKE_C_COMPILER=arm-linux-gnueabihf-gcc -DCMAKE_CXX_COMPILER=arm-linux-
 executable's TLS segment is underaligned: alignment is 8 (skew 0), needs to be at least 64 for ARM64 Bionic
 ```
 
-2. debug模式编译 `-DCMAKE_BUILD_TYPE=Debug`
+后面切换到了ndk编译，成功编译并执行。
+
+2. 调试程序
+
+建议使用这个命令：
+
+```shell
+cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCMAKE_VERBOSE_MAKEFILE=ON -DCMAKE_CXX_FLAGS=" -g " -DCMAKE_BUILD_TYPE=Debug .. 
+```
 
 3. 导出编译命令 `-DCMAKE_EXPORT_COMPILE_COMMANDS=ON`
+
+## 目录结构
+
+```
+examples: 使用样例
+tests: 测试
+src: 源代码
+tools: 基于anoii实现的工具
+```
 

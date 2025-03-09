@@ -1,0 +1,4 @@
+add_executable(udp_proxy_srv udp_proxy/srv.cc)
+target_link_libraries(udp_proxy_srv anoii)
+add_executable(udp_proxy_cli udp_proxy/cli.cc)
+target_link_libraries(udp_proxy_cli anoii)

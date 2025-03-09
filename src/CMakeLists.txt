@@ -19,6 +19,7 @@ set(ANOII_SOURCES
   connector.cc
   tcp_client.cc
   epoller.cc
+  udp_peer.cc
 )
 add_library(anoii ${ANOII_SOURCES})
 target_include_directories(anoii PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include/)

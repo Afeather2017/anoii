@@ -30,6 +30,7 @@ list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
 add_subdirectory(src)
 add_subdirectory(tests)
+add_subdirectory(tools)
 add_subdirectory(examples)
 
 # 添加一个选项，默认关闭 ClangFormat

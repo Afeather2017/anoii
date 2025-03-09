@@ -1,5 +1,6 @@
 #include "tcp_server.h"
 
+#include <cassert>
 #include <memory>
 
 #include "acceptor.h"
@@ -8,7 +9,8 @@
 #include "tcp_connection.h"
 TcpServer::TcpServer(EventLoop *loop, InetAddr &addr) : loop_{loop} {
   acceptor_ = new Acceptor{loop, addr, 4, true, true};
-  FatalIf(!acceptor_, "Cannot create acceptor");
+  // 据说某些C++编译器会让new返回nullptr而不是throw exception.
+  assert(!acceptor_);
   acceptor_->SetNewConnectionCallback(std::bind(&TcpServer::NewConnection,
                                                 this,
                                                 std::placeholders::_1,

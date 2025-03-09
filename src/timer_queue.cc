@@ -106,6 +106,7 @@ void TimerQueue::DoExpired() {
     expired_.push_back(*i);
     timers_.erase(i++);
   }
+  Trace("Handle {} expired timer", expired_.size());
   for (auto i : expired_) {
     mstime_t next_delay = i.second->Call(current);
     if (next_delay <= 0) {
