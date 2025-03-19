@@ -32,6 +32,11 @@ static void DefaultErrorCb(std::shared_ptr<TcpConnection> ptr) {
   Info("tcpid={} called tries call an invalid error cb", ptr->GetId());
 }
 
+static void DefaultHighWatermarkCb(std::shared_ptr<TcpConnection> ptr) {
+  Warn("tcpid={} called tries call an invalid high watermark cb", ptr->GetId());
+  ptr->Shutdown();
+}
+
 TcpConnection::TcpConnection(EventLoop *loop,
                              int sockfd,
                              uint64_t id,
@@ -54,6 +59,7 @@ TcpConnection::TcpConnection(EventLoop *loop,
   SetWriteCompleteCallback(DefaultWriteCb);
   SetConnectionCallback(DefaultConnCb);
   SetCloseCallback(DefaultCloseCb);
+  SetHighWatermarkCallback(DefaultHighWatermarkCb);
   SetState(kConnecting);
   input_buffer_ = std::make_unique<Buffer>(1024, 0);
   output_buffer_ = std::make_unique<Buffer>(1024, 8);
@@ -117,7 +123,10 @@ void TcpConnection::HandleClose() {
   channel_.DisableAll();
   loop_->RemoveChannel(&channel_);
   Debug("TcpConnection {}: Channel@{} removed", id_, channel_.to_string());
-  close_cb_(shared_from_this());
+  state_ = kDisconnected;
+  auto self = shared_from_this();
+  conn_cb_(self);
+  close_cb_(self);
 }
 
 void TcpConnection::HandleError(ssize_t read_ret, int err) {
@@ -134,7 +143,10 @@ void TcpConnection::Send(const char *data, size_t size) {
   // 调用这个函数后，data需要存在多久？
   // 在当前线程调用，那么就是函数结束后就不需要继续存在了。
   // 在别的线程调用，则需要存活久一些，至少要到SendUnsafe执行之后。
-  assert(state_ == kEstablished);
+  if (state_ != kEstablished) {
+    Trace("conn {} ignored {} sending data", GetId(), size);
+    return;
+  }
   loop_->RunInLoop(std::bind(&TcpConnection::SendUnsafe, this, data, size));
 }
 
@@ -162,17 +174,25 @@ void TcpConnection::SendUnsafe(const char *data, size_t size) {
     if (ret < 0) {
       if (!(errno == EAGAIN || errno == EWOULDBLOCK)) {
         Error("write socket: {}", strerror(errno));
+        return;
       }
       ret = 0;
     }
     if (ret < size) {
+      // 当前数据无法发送完，需要监听写入完成事件
       Trace("tcpid={} enabled write to write more data", id_);
       output_buffer_->Append(data + ret, size - ret);
       channel_.EnableWrite();
     } else {
-      // 当前数据发送完了
+      // 当前数据发送完了，所以不需要监听
       loop_->QueueInLoop(std::bind(write_cb_, shared_from_this()));
     }
+  }
+  // 考虑这样一种情况:
+  // 入口流量速度远远大于出口流量速度，此时数据就会产生严重的数据积压。
+  // 如果真的出现了这种问题，那么似乎除了关闭连接以外，就没有很好的解法了。
+  if (output_buffer_->size() >= watermark_) {
+    watermark_cb_(shared_from_this());
   }
 }
 

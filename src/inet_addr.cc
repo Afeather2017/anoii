@@ -4,11 +4,18 @@
 
 #include <cassert>
 #include <string>
+#include <cstring>
 
 InetAddr::InetAddr(uint16_t port, bool loopback_only) {
   addr_.sin_family = AF_INET;
   addr_.sin_addr.s_addr = loopback_only ? INADDR_LOOPBACK : INADDR_ANY;
   addr_.sin_port = htons(port);
+}
+
+InetAddr::InetAddr() {
+  addr_.sin_family = AF_INET;
+  addr_.sin_addr.s_addr = INADDR_ANY;
+  addr_.sin_port = htons(0);
 }
 
 InetAddr::InetAddr(std::string_view ip, uint16_t port) {
@@ -24,4 +31,18 @@ std::string InetAddr::GetIp() const {
   assert(buf ==
          inet_ntop(addr_.sin_family, &addr_.sin_addr, buf, sizeof(addr_)));
   return std::string{buf};
+}
+
+char *InetAddr::GetAddrBytes() {
+  assert(addr_.sin_family == AF_INET);
+  return reinterpret_cast<char*>(&addr_.sin_addr.s_addr);
+}
+
+const char *InetAddr::GetAddrBytes() const {
+  assert(addr_.sin_family == AF_INET);
+  return reinterpret_cast<const char*>(&addr_.sin_addr.s_addr);
+}
+
+bool InetAddr::operator==(const InetAddr &rhs) {
+  return 0 == memcmp(&rhs.addr_, &addr_, sizeof(struct sockaddr_in));
 }

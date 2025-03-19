@@ -43,6 +43,13 @@ class TcpConnection final : public std::enable_shared_from_this<TcpConnection> {
       const std::function<void(std::shared_ptr<TcpConnection>)> &cb) {
     close_cb_ = cb;
   }
+  void SetHighWatermarkCallback(
+      const std::function<void(std::shared_ptr<TcpConnection>)> &cb) {
+    watermark_cb_ = cb;
+  }
+  void SetHighWatermark(long long watermark) {
+    watermark_ = watermark;
+  }
   auto GetPeer() { return peer_; }
   void OnEstablished();
   void DestroyConnection();
@@ -63,6 +70,8 @@ class TcpConnection final : public std::enable_shared_from_this<TcpConnection> {
   int fd_;
   ConnState state_;
   uint64_t id_;
+  // 1GB大小限制，大概够应付多数场景了吧？
+  long long watermark_{1024 * 1024 * 1024};
   EventLoop *loop_;
   Channel channel_;
   InetAddr local_;
@@ -74,5 +83,6 @@ class TcpConnection final : public std::enable_shared_from_this<TcpConnection> {
   std::function<void(std::shared_ptr<TcpConnection>, Buffer *)> readable_cb_;
   std::function<void(std::shared_ptr<TcpConnection>)> write_cb_;
   std::function<void(std::shared_ptr<TcpConnection>)> close_cb_;
+  std::function<void(std::shared_ptr<TcpConnection>)> watermark_cb_;
 };
 #endif  // TCP_CONNECTION_H

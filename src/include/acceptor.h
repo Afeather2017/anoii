@@ -27,6 +27,7 @@ class Acceptor final {
  private:
   Channel channel_;
   InetAddr addr_;
+  int idle_fd_;
   std::function<void(int peer_fd, InetAddr *perr_addr)> new_conn_cb_;
 };
 #endif  // ACCEPTOR_H

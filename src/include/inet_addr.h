@@ -11,7 +11,7 @@ class InetAddr final {
   // For accept socket only
   explicit InetAddr(uint16_t port, bool loopback_only = false);
   explicit InetAddr(struct sockaddr_in addr) : addr_{addr} {}
-  InetAddr() = default;
+  InetAddr();
   InetAddr(std::string_view ip, uint16_t port);
   ~InetAddr() = default;
   struct sockaddr *GetSockAddr() {
@@ -23,8 +23,20 @@ class InetAddr final {
   std::string GetAddr() const {
     return GetIp() + ':' + std::to_string(GetPort());
   }
-
+  char *GetAddrBytes();
+  const char *GetAddrBytes() const;
+  bool operator==(const InetAddr &rhs);
  private:
   struct sockaddr_in addr_{};
+};
+namespace std {
+  template <>
+  struct hash<InetAddr> {
+    auto operator()(const InetAddr &addr) {
+      long long val = *(int*)(addr.GetAddrBytes()) * 0x10000;
+      val += addr.GetPort();
+      return hash<long long>{}(val);
+    }
+  };
 };
 #endif  // INET_ADDR_H

@@ -10,7 +10,7 @@
 TcpServer::TcpServer(EventLoop *loop, InetAddr &addr) : loop_{loop} {
   acceptor_ = new Acceptor{loop, addr, 4, true, true};
   // 据说某些C++编译器会让new返回nullptr而不是throw exception.
-  assert(!acceptor_);
+  assert(acceptor_);
   acceptor_->SetNewConnectionCallback(std::bind(&TcpServer::NewConnection,
                                                 this,
                                                 std::placeholders::_1,
@@ -18,6 +18,9 @@ TcpServer::TcpServer(EventLoop *loop, InetAddr &addr) : loop_{loop} {
 }
 
 void TcpServer::NewConnection(int peer_fd, InetAddr *peer_addr) {
+  // TODO:
+  // 在此处对最大连接数量进行限制。
+  // 原因是文件描述符用完了之后，问题就不好解决了。
   loop_->AssertIfOutLoopThread();
   auto id = next_id_++;
   auto conn = std::make_shared<TcpConnection>(
