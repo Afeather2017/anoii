@@ -1,6 +1,7 @@
 #include "tcp_client.h"
 
 #include <functional>
+#include <memory>
 
 #include "connector.h"
 #include "event_loop.h"
@@ -9,7 +10,7 @@
 #include "tcp_connection.h"
 TcpClient::TcpClient(EventLoop *loop, const InetAddr &addr) {
   loop_ = loop;
-  connector_ = new Connector{loop, addr};
+  connector_ = std::make_unique<Connector>(loop, addr);
   connector_->SetNewConnCb(std::bind(&TcpClient::NewConnection,
                                      this,
                                      std::placeholders::_1,
@@ -34,12 +35,16 @@ void TcpClient::NewConnection(int fd, const InetAddr &addr) {
 void TcpClient::HandleClose() {
   loop_->AssertIfOutLoopThread();
   if (retry_) {
-    if (connector_) delete connector_;
-    connector_ = new Connector{loop_, peer_};
+    connector_ = std::make_unique<Connector>(loop_, peer_);
     connector_->SetNewConnCb(std::bind(&TcpClient::NewConnection,
                                        this,
                                        std::placeholders::_1,
                                        std::placeholders::_2));
     connector_->Start();
   }
+}
+
+TcpClient::~TcpClient() {
+  // std::unique_ptr在析构的时候居然需要知道包含的成员的大小？
+  // 本来可以用默认析构的，但是因为这个，只能写一个默认析构了。
 }

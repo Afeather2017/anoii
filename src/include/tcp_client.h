@@ -28,12 +28,13 @@ class TcpClient final {
       std::function<void(std::shared_ptr<TcpConnection>)> cb) {
     write_cb_ = cb;
   }
+  ~TcpClient();
 
  private:
   void NewConnection(int fd, const InetAddr &addr);
   void HandleClose();
   EventLoop *loop_;
-  Connector *connector_;
+  std::unique_ptr<Connector> connector_;
   bool retry_ = false;
   InetAddr peer_;
   std::shared_ptr<TcpConnection> conn_;
