@@ -117,6 +117,10 @@ void TcpConnection::DestroyConnection() {
 
 void TcpConnection::HandleClose() {
   loop_->AssertIfOutLoopThread();
+  // 由于SIGPIPE时，POLLHUP和POLLIN会同时发生。
+  // read()返回0，会进行一次Close，然而POLLHUP也会触发一次Close，
+  // 所以可能出现Close两次的异常情况。
+  if (state_ == kDisconnected) return;
   assert(state_ == kEstablished || state_ == kHalfShutdown);
   // FIXME: 此处直接DisableAll，可能会导致可写入事件不再发生。
   // 在output_buffer中可能残留部分数据将不会再发送。
