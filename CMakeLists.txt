@@ -52,3 +52,18 @@ endif()
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_VERBOSE_MAKEFILE ON)
 #set(CMAKE_BUILD_TYPE Debug)
+
+# 检查是否为 Git 仓库
+find_package(Git QUIET)
+if(GIT_FOUND AND EXISTS "${CMAKE_SOURCE_DIR}/.git")
+  # 定义源文件和目标路径
+  set(HOOK_SOURCE "${CMAKE_SOURCE_DIR}/scripts/git-hooks/pre-commit")
+  set(HOOK_TARGET "${CMAKE_SOURCE_DIR}/.git/hooks/pre-commit")
+
+  # 若钩子不存在或需要更新，则复制并设置权限
+  if(NOT EXISTS "${HOOK_TARGET}" OR (${HOOK_SOURCE} IS_NEWER_THAN ${HOOK_TARGET}))
+    file(COPY "${HOOK_SOURCE}" DESTINATION "${CMAKE_SOURCE_DIR}/.git/hooks")
+    file(CHMOD "${HOOK_TARGET}" PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE)
+    message(STATUS "Git Hook 已安装: ${HOOK_TARGET}")
+  endif()
+endif()
