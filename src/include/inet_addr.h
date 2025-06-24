@@ -26,17 +26,18 @@ class InetAddr final {
   char *GetAddrBytes();
   const char *GetAddrBytes() const;
   bool operator==(const InetAddr &rhs);
+
  private:
   struct sockaddr_in addr_{};
 };
 namespace std {
-  template <>
-  struct hash<InetAddr> {
-    auto operator()(const InetAddr &addr) {
-      long long val = *(int*)(addr.GetAddrBytes()) * 0x10000;
-      val += addr.GetPort();
-      return hash<long long>{}(val);
-    }
-  };
+template <>
+struct hash<InetAddr> {
+  auto operator()(const InetAddr &addr) {
+    long long val = *(int *)(addr.GetAddrBytes()) * 0x10000;
+    val += addr.GetPort();
+    return hash<long long>{}(val);
+  }
 };
+};  // namespace std
 #endif  // INET_ADDR_H

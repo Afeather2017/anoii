@@ -92,8 +92,7 @@ void TcpConnection::HandleWrite() {
   Trace("Write {} byte to {} got ret={}", size, channel_.GetFd(), ret);
   if (ret < 0) {
     if (!(errno == EAGAIN || errno == EWOULDBLOCK)) {
-      Error("write socket: {}",
-          strerror(errno));
+      Error("write socket: {}", strerror(errno));
     }
   } else if (ret <= size) {
     output_buffer_->Pop(ret);

@@ -3,8 +3,8 @@
 #include <arpa/inet.h>
 
 #include <cassert>
-#include <string>
 #include <cstring>
+#include <string>
 
 InetAddr::InetAddr(uint16_t port, bool loopback_only) {
   addr_.sin_family = AF_INET;
@@ -35,12 +35,12 @@ std::string InetAddr::GetIp() const {
 
 char *InetAddr::GetAddrBytes() {
   assert(addr_.sin_family == AF_INET);
-  return reinterpret_cast<char*>(&addr_.sin_addr.s_addr);
+  return reinterpret_cast<char *>(&addr_.sin_addr.s_addr);
 }
 
 const char *InetAddr::GetAddrBytes() const {
   assert(addr_.sin_family == AF_INET);
-  return reinterpret_cast<const char*>(&addr_.sin_addr.s_addr);
+  return reinterpret_cast<const char *>(&addr_.sin_addr.s_addr);
 }
 
 bool InetAddr::operator==(const InetAddr &rhs) {
