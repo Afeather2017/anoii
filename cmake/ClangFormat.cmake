@@ -42,11 +42,53 @@ function(prefix_clangformat_setup prefix)
   endif()
 endfunction()
 
+function(prefix_clangformat_setup_check prefix)
+  if(NOT CLANGFORMAT_EXECUTABLE)
+    set(CLANGFORMAT_EXECUTABLE clang-format)
+  endif()
+
+  if(NOT EXISTS ${CLANGFORMAT_EXECUTABLE})
+    find_program(clangformat_executable_tmp ${CLANGFORMAT_EXECUTABLE})
+    if(clangformat_executable_tmp)
+      set(CLANGFORMAT_EXECUTABLE ${clangformat_executable_tmp})
+      unset(clangformat_executable_tmp)
+    else()
+      message(FATAL_ERROR "ClangFormat: ${CLANGFORMAT_EXECUTABLE} not found! Aborting")
+    endif()
+  endif()
+
+  foreach(clangformat_source ${ARGN})
+    get_filename_component(clangformat_source ${clangformat_source} ABSOLUTE)
+    list(APPEND clangformat_sources ${clangformat_source})
+  endforeach()
+
+  add_custom_target(${prefix}_clangformat_check
+    COMMAND
+      ${CLANGFORMAT_EXECUTABLE}
+      --dry-run
+      -Werror
+      -style=file
+      ${clangformat_sources}
+    WORKING_DIRECTORY
+      ${CMAKE_SOURCE_DIR}
+    COMMENT
+    "Comparing ${prefix} with ${CLANGFORMAT_EXECUTABLE} ..."
+  )
+
+  if(TARGET clangformat_check)
+    add_dependencies(clangformat_check ${prefix}_clangformat_check)
+  else()
+    add_custom_target(clangformat_check DEPENDS ${prefix}_clangformat_check)
+  endif()
+endfunction()
+
 function(clangformat_setup)
   prefix_clangformat_setup(${PROJECT_NAME} ${ARGN})
+  prefix_clangformat_setup_check(${PROJECT_NAME} ${ARGN})
 endfunction()
 
 function(target_clangformat_setup target)
   get_target_property(target_sources ${target} SOURCES)
   prefix_clangformat_setup(${target} ${target_sources})
+  prefix_clangformat_setup_check(${target} ${target_sources})
 endfunction()

@@ -1,23 +1,27 @@
 #!/bin/bash
 
-# 检查是否有未格式化的 C/C++ 文件
-UNFORMATTED_FILES=$(git diff --cached --name-only --diff-filter=ACM | grep -E '\.(cpp|cc|c|h|hpp)$')
+FILES_TO_COMMIT=$(git diff --cached --name-only --diff-filter=ACM)
+echo $FILES_TO_COMMIT is going to commit.
 
-if [ -n "$UNFORMATTED_FILES" ]; then
-    # 检查文件是否被 clang-format 修改过
-    for file in $UNFORMATTED_FILES; do
-        TEMP_FILE=$(mktemp)
-        git show ":$file" > "$TEMP_FILE"
-        clang-format -style=file "$TEMP_FILE" > "${TEMP_FILE}.formatted"
-        if ! diff -q "$TEMP_FILE" "${TEMP_FILE}.formatted" > /dev/null; then
-            echo "错误：文件 '$file' 未使用 clang-format 格式化！"
-            echo "请运行以下命令格式化后重新提交："
-            echo "  clang-format -style=file -i $file && git add $file"
-            rm "$TEMP_FILE" "${TEMP_FILE}.formatted"
-            exit 1
-        fi
-        rm "$TEMP_FILE" "${TEMP_FILE}.formatted"
-    done
+for file in $FILES_TO_COMMIT; do
+  TEMP_FILE=$(mktemp)
+  git show ":$file" > $TEMP_FILE
+  if ! diff $file $TEMP_FILE ; then
+    echo $file is changed after add, please git add it.
+    exit 1
+  fi
+done
+
+cd build
+if [ $? != 0 ]; then
+  echo Missing build directory!
+  exit 1
+fi
+
+
+if ! make clangformat_check &> /dev/null ; then
+  echo Please clang-format your code
+  exit 1
 fi
 
 exit 0
