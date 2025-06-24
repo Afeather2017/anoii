@@ -69,7 +69,11 @@ void Buffer::Prepend(const char *data, int size) {
 }
 bool Buffer::StartWith(const char *data, int size) {
   if (ReadableBytes() < size) return false;
-  return memcmp(data, begin(), size);
+  return 0 == memcmp(data, begin(), size);
+}
+ssize_t Buffer::FirstOf(const char *data, int size) {
+  void *start = memmem(begin(), this->size(), data, size);
+  return start == NULL ? -1 : static_cast<char *>(start) - begin();
 }
 bool Buffer::Contains(char ch) {
   for (int i = head_; i < tail_; i++) {

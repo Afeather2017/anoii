@@ -36,6 +36,7 @@ class Buffer {
     head_ += size;
   }
   bool StartWith(const char *data, int size);
+  ssize_t FirstOf(const char *data, int size);
   bool Contains(char ch);
   // 使得还可以连续追加写入size个字节
   void EnsureWritableSpace(int size);
