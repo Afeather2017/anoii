@@ -23,6 +23,7 @@ class Acceptor final {
   void AcceptHandler();
   Channel *GetChannel() { return &channel_; }
   const InetAddr &GetAddr() { return addr_; }
+  ~Acceptor();
 
  private:
   Channel channel_;

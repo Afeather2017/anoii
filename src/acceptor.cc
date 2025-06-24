@@ -7,7 +7,6 @@
 
 #include <cassert>
 #include <cstring>
-#include <mutex>
 
 #include "event_loop.h"
 #include "inet_addr.h"
@@ -76,8 +75,11 @@ void Acceptor::AcceptHandler() {
         break;
       }
       break;
-    default:
-      Error("cannot accept: {}", strerror(errno));
-      break;
+    default: Error("cannot accept: {}", strerror(errno)); break;
   }
+}
+Acceptor::~Acceptor() {
+  channel_.DisableAll();
+  ::close(channel_.GetFd());
+  ::close(idle_fd_);
 }
