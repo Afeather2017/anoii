@@ -1,6 +1,7 @@
 #pragma once
 #ifndef TCP_CONNECTION_H
 #define TCP_CONNECTION_H
+#include <any>
 #include <functional>
 #include <memory>
 
@@ -47,9 +48,7 @@ class TcpConnection final : public std::enable_shared_from_this<TcpConnection> {
       const std::function<void(std::shared_ptr<TcpConnection>)> &cb) {
     watermark_cb_ = cb;
   }
-  void SetHighWatermark(long long watermark) {
-    watermark_ = watermark;
-  }
+  void SetHighWatermark(long long watermark) { watermark_ = watermark; }
   auto GetPeer() { return peer_; }
   void OnEstablished();
   void DestroyConnection();
@@ -59,16 +58,23 @@ class TcpConnection final : public std::enable_shared_from_this<TcpConnection> {
   void HandleClose();
   void HandleError(ssize_t read_ret, int err);
   void Send(const char *data, size_t size);
+  void Send(std::string_view sv);
   void Shutdown();
   EventLoop *GetLoop() { return loop_; }
   uint64_t GetId() { return id_; }
   ConnState GetState() { return state_; };
+  void SetContext(std::any context) { context_ = std::move(context); }
+  template <typename Type>
+  Type &GetContext() {
+    return std::any_cast<Type &>(context_);
+  }
 
  private:
   void ShutdownUnsafe();
   void SendUnsafe(const char *data, size_t size);
   int fd_;
   ConnState state_;
+  // TODO: 将ID更改为字符串形式以分辨清楚该连接的作用
   uint64_t id_;
   // 1GB大小限制，大概够应付多数场景了吧？
   long long watermark_{1024 * 1024 * 1024};
@@ -84,5 +90,6 @@ class TcpConnection final : public std::enable_shared_from_this<TcpConnection> {
   std::function<void(std::shared_ptr<TcpConnection>)> write_cb_;
   std::function<void(std::shared_ptr<TcpConnection>)> close_cb_;
   std::function<void(std::shared_ptr<TcpConnection>)> watermark_cb_;
+  std::any context_;
 };
 #endif  // TCP_CONNECTION_H

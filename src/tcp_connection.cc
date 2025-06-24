@@ -68,6 +68,7 @@ TcpConnection::TcpConnection(EventLoop *loop,
 TcpConnection::~TcpConnection() {
   loop_->AssertIfOutLoopThread();
   close(fd_);
+  assert(state_ == kDisconnected);
 }
 
 void TcpConnection::HandleRead() {
@@ -91,7 +92,8 @@ void TcpConnection::HandleWrite() {
   Trace("Write {} byte to {} got ret={}", size, channel_.GetFd(), ret);
   if (ret < 0) {
     if (!(errno == EAGAIN || errno == EWOULDBLOCK)) {
-      Error("write socket: {}", strerror(errno));
+      Error("write socket: {}",
+          strerror(errno));
     }
   } else if (ret <= size) {
     output_buffer_->Pop(ret);
@@ -153,6 +155,8 @@ void TcpConnection::Send(const char *data, size_t size) {
   }
   loop_->RunInLoop(std::bind(&TcpConnection::SendUnsafe, this, data, size));
 }
+
+void TcpConnection::Send(std::string_view sv) { Send(sv.data(), sv.size()); }
 
 void TcpConnection::SendUnsafe(const char *data, size_t size) {
   loop_->AssertIfOutLoopThread();
