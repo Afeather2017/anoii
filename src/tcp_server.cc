@@ -7,7 +7,7 @@
 #include "event_loop.h"
 #include "logger.h"
 #include "tcp_connection.h"
-TcpServer::TcpServer(EventLoop *loop, InetAddr &addr) : loop_{loop} {
+TcpServer::TcpServer(EventLoop *loop, const InetAddr &addr) : loop_{loop} {
   acceptor_ = new Acceptor{loop, addr, 4, true, true};
   // 据说某些C++编译器会让new返回nullptr而不是throw exception.
   assert(acceptor_);
@@ -42,9 +42,9 @@ void TcpServer::RemoveConnection(std::shared_ptr<TcpConnection> conn) {
 
 TcpServer::~TcpServer() {
   for (auto &[id, conn] : this->id_conn_) {
-    conn.reset();
     conn->GetLoop()->RunInLoop(
         std::bind(&TcpConnection::DestroyConnection, conn));
+    conn.reset();
   }
   delete acceptor_;
 }

@@ -15,7 +15,7 @@ class Buffer;
 class TcpServer final {
  public:
   DISALLOW_COPY(TcpServer);
-  TcpServer(EventLoop *loop, InetAddr &addr);
+  TcpServer(EventLoop *loop, const InetAddr &addr);
   ~TcpServer();
   void SetConnectionCallback(
       const std::function<void(std::shared_ptr<TcpConnection>)> &cb) {
