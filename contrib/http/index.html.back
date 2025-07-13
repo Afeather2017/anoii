@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HTMX 请求头交互示例</title>
+    <script src="https://unpkg.com/htmx.org@2.0.4" 
+            integrity="sha384-HGfztofotfshcF7+8n44JQL2oJmowVChPTg48S+jvZoztPfvwD79OC/LTtG6dMp+" 
+            crossorigin="anonymous"></script>
+    <style>
+        /* 样式保持与之前一致 */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f8f9fa;
+        }
+        .container {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            padding: 30px;
+            margin-top: 20px;
+        }
+        .btn-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        button {
+            padding: 12px 15px;
+            background-color: #4a6cf7;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+        button:hover {
+            background-color: #3a56e0;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+        .response-area {
+            min-height: 80px;
+            padding: 20px;
+            background-color: #eef2ff;
+            border-radius: 8px;
+            margin-top: 20px;
+            border-left: 4px solid #4a6cf7;
+        }
+        h1 {
+            color: #2d3748;
+            margin-bottom: 25px;
+            text-align: center;
+        }
+        .htmx-indicator {
+            display: none;
+            text-align: center;
+            margin-top: 15px;
+        }
+        .htmx-request .htmx-indicator {
+            display: block;
+        }
+        .htmx-request.response-area {
+            opacity: 0.5;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>HTMX 请求头交互演示</h1>
+        
+        <!-- 按钮组 - 使用请求头传递动作标识 -->
+        <div class="btn-group">
+            <button hx-post="/action" 
+                    hx-headers='{"Action-ID": "1"}'
+                    hx-target="#response" 
+                    hx-swap="innerHTML"
+                    hx-indicator="#indicator">
+                动作1
+            </button>
+            
+            <button hx-post="/action" 
+                    hx-headers='{"Action-ID": "2"}'
+                    hx-target="#response" 
+                    hx-swap="innerHTML"
+                    hx-indicator="#indicator">
+                动作2
+            </button>
+            
+            <button hx-post="/action" 
+                    hx-headers='{"Action-ID": "3"}'
+                    hx-target="#response" 
+                    hx-swap="innerHTML"
+                    hx-indicator="#indicator">
+                动作3
+            </button>
+            
+            <button hx-get="/pass" 
+                    hx-target="#response" 
+                    hx-swap="innerHTML"
+                    hx-indicator="#indicator">
+                测试通过
+            </button>
+        </div>
+        
+        <!-- 响应区域 -->
+        <div class="response-area" id="response">
+            服务器响应将显示在这里...
+        </div>
+        
+        <!-- 加载指示器 -->
+        <div id="indicator" class="htmx-indicator">
+            <div>加载中...</div>
+        </div>
+    </div>
+</body>
+</html>
