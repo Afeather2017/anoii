@@ -32,6 +32,7 @@ add_subdirectory(src)
 add_subdirectory(tests)
 add_subdirectory(tools)
 add_subdirectory(examples)
+add_subdirectory(contrib)
 
 # 添加一个选项，默认关闭 ClangFormat
 option(ENABLE_CLANGFORMAT "Enable ClangFormat formatting" OFF)
@@ -43,6 +44,8 @@ if(ENABLE_CLANGFORMAT)
     "src/include/*.h"
     "examples/*.cc"
     "tests/*.cc"
+    "tools/*/*.cc"
+    "contrib/*/*.cc"
   )
   message(STATUS "ClangFormat enabled.")
 else()
