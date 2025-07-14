@@ -12,7 +12,7 @@ void NewConn(std::shared_ptr<TcpConnection> conn,
              const InetAddr &peer) {
   auto addr = GetLocalAddr(sockfd);
   conn = std::make_shared<TcpConnection>(&loop, sockfd, 0, addr, peer);
-  conn->SetConnectionCallback([](std::shared_ptr<TcpConnection> conn) {});
+  conn->SetConnectionCallback([](std::shared_ptr<TcpConnection>) {});
   conn->OnEstablished();
   conn->Send("exit", 4);
   conn->Shutdown();

@@ -15,7 +15,7 @@ static const int char_size = 127 - 33;
 static char tmp[20000 / char_size * char_size];
 static char charset[char_size];
 void WriteCb(std::shared_ptr<TcpConnection> conn) {
-  for (int i = 0; i < sizeof(tmp); i++) {
+  for (unsigned i = 0; i < sizeof(tmp); i++) {
     tmp[i] = charset[i % char_size];
   }
   written += sizeof(tmp);
@@ -33,14 +33,14 @@ void ConnCb(std::shared_ptr<TcpConnection> conn) {
     default: Fatal("Unknow tcp status");
   }
 }
-mstime_t TimerCb(mstime_t now) {
-  fmt::println("{:.3f}MB/s", written / 1024. / 1024);
+mstime_t TimerCb(mstime_t) {
+  fmt::println("{:.3f}MB/s", static_cast<double>(written) / 1024. / 1024);
   written = 0;
   return 1000;
 }
 int main() {
   for (int i = 0; i < char_size; i++) {
-    charset[i] = i + 33;
+    charset[i] = static_cast<char>(i + 33);
   }
   signal(SIGPIPE, SIG_IGN);
   InetAddr addr{9997};

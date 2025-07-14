@@ -23,8 +23,8 @@ class TestAutoSize final {
                                        std::placeholders::_4));
     loop_.AddTimer(std::bind(&TestAutoSize::Timer, this, std::placeholders::_1),
                    10);
-    for (int i = 0; i < sizeof(buffer_); i++) {
-      int j = i % (10 + 26 + 26);
+    for (unsigned i = 0; i < sizeof(buffer_); i++) {
+      char j = i % (10 + 26 + 26);
       if (j < 10) {
         buffer_[i] = '0' + j;
       } else if (j - 10 < 26) {
@@ -34,7 +34,7 @@ class TestAutoSize final {
       }
     }
   }
-  mstime_t Timer(mstime_t t) {
+  mstime_t Timer(mstime_t) {
     int size = rand() % 65536;
     Info("Send {} data", size);
     cli_.SendTo(buffer_, size, srv_addr_);
@@ -47,11 +47,11 @@ class TestAutoSize final {
   void Run() { loop_.Loop(); }
 
  private:
-  void SrvReadCb(UdpPeer *srv, InetAddr &addr, char *data, int size) {
-    assert(memcmp(buffer_, data, size) == 0);
+  void SrvReadCb(UdpPeer *, InetAddr &, char *data, int size) {
+    assert(memcmp(buffer_, data, static_cast<size_t>(size)) == 0);
   }
-  void CliReadCb(UdpPeer *cli, InetAddr &addr, char *data, int size) {
-    assert(memcmp(buffer_, data, size) == 0);
+  void CliReadCb(UdpPeer *, InetAddr &, char *data, int size) {
+    assert(memcmp(buffer_, data, static_cast<size_t>(size)) == 0);
   }
   char buffer_[65536];
   InetAddr srv_addr_{"127.0.0.1", 9996};
@@ -77,8 +77,8 @@ class TestFixxedSize final {
                                        std::placeholders::_4));
     loop_.AddTimer(
         std::bind(&TestFixxedSize::Timer, this, std::placeholders::_1), 10);
-    for (int i = 0; i < sizeof(buffer_); i++) {
-      int j = i % (10 + 26 + 26);
+    for (unsigned i = 0; i < sizeof(buffer_); i++) {
+      char j = i % (10 + 26 + 26);
       if (j < 10) {
         buffer_[i] = '0' + j;
       } else if (j - 10 < 26) {
@@ -101,13 +101,13 @@ class TestFixxedSize final {
   void Run() { loop_.Loop(); }
 
  private:
-  void SrvReadCb(UdpPeer *srv, InetAddr &addr, char *data, int size) {
+  void SrvReadCb(UdpPeer *, InetAddr &, char *data, int size) {
     assert(size <= 4000);
-    assert(memcmp(buffer_, data, size) == 0);
+    assert(memcmp(buffer_, data, static_cast<size_t>(size)) == 0);
   }
-  void CliReadCb(UdpPeer *cli, InetAddr &addr, char *data, int size) {
+  void CliReadCb(UdpPeer *, InetAddr &, char *data, int size) {
     assert(size <= 4000);
-    assert(memcmp(buffer_, data, size) == 0);
+    assert(memcmp(buffer_, data, static_cast<size_t>(size)) == 0);
   }
   char buffer_[65536];
   InetAddr srv_addr_{"127.0.0.1", 9996};
@@ -117,7 +117,7 @@ class TestFixxedSize final {
   int send_times_ = 0;
 };
 int main() {
-  srand(time(nullptr));
+  srand(static_cast<unsigned>(time(nullptr)));
   {
     TestAutoSize test1;
     test1.Run();

@@ -12,7 +12,7 @@
 #include "logger.h"
 #include "socket.h"
 static void DefaultReadCb(std::shared_ptr<TcpConnection> ptr, Buffer *buf) {
-  buf->Pop(buf->size());
+  buf->Pop(static_cast<int>(buf->size()));
   Info("tcpid={} called tries call an invalid read cb", ptr->GetId());
 }
 
@@ -42,7 +42,7 @@ TcpConnection::TcpConnection(EventLoop *loop,
                              uint64_t id,
                              const InetAddr &local,
                              const InetAddr &peer)
-    : loop_{loop}, local_{local}, peer_{peer}, channel_{loop, sockfd} {
+    : loop_{loop}, channel_{loop, sockfd}, local_{local}, peer_{peer} {
   id_ = id;
   fd_ = sockfd;
   assert(fd_ >= 0);
@@ -168,12 +168,12 @@ void TcpConnection::SendUnsafe(const char *data, size_t size) {
   // 这可能发生吗？
   // SendUnsafe和HandleWrite只可能同时在同一个线程上执行，所以不会
   if (channel_.IsWriting()) {
-    output_buffer_->Append(data, size);
+    output_buffer_->Append(data, static_cast<int>(size));
     return;
   }
   if (!output_buffer_->Empty()) {
     // 缓存区中依然还有数据待发送
-    output_buffer_->Append(data, size);
+    output_buffer_->Append(data, static_cast<int>(size));
     channel_.EnableWrite();
   } else {
     // 缓存区中没有数据待发送
@@ -185,10 +185,11 @@ void TcpConnection::SendUnsafe(const char *data, size_t size) {
       }
       ret = 0;
     }
-    if (ret < size) {
+    if (ret < static_cast<ssize_t>(size)) {
       // 当前数据无法发送完，需要监听写入完成事件
       Trace("tcpid={} enabled write to write more data", id_);
-      output_buffer_->Append(data + ret, size - ret);
+      output_buffer_->Append(
+          data + ret, static_cast<int>(static_cast<ssize_t>(size) - ret));
       channel_.EnableWrite();
     } else {
       // 当前数据发送完了，所以不需要监听
@@ -198,7 +199,7 @@ void TcpConnection::SendUnsafe(const char *data, size_t size) {
   // 考虑这样一种情况:
   // 入口流量速度远远大于出口流量速度，此时数据就会产生严重的数据积压。
   // 如果真的出现了这种问题，那么似乎除了关闭连接以外，就没有很好的解法了。
-  if (output_buffer_->size() >= watermark_) {
+  if (output_buffer_->size() >= static_cast<size_t>(watermark_)) {
     watermark_cb_(shared_from_this());
   }
 }

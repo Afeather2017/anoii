@@ -24,7 +24,7 @@ int GetSockError(int sockfd) {
 void IgnoreSigPipe() { signal(SIGPIPE, SIG_IGN); }
 
 void SetTcpNoDelay(int fd) {
-  int optval;
+  int optval = 0;
   socklen_t optlen = static_cast<socklen_t>(sizeof optval);
   int err = ::setsockopt(fd,
                          IPPROTO_TCP,

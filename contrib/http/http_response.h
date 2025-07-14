@@ -21,14 +21,15 @@ struct HttpResponse {
     buf_.Append(msg);
   }
   HttpResponse() = default;
+  virtual ~HttpResponse() = default;
   void AddHeader(std::string_view key, std::string_view value);
   [[nodiscard]]
   std::string StartAndFieldToString();
   // begin和size应当一起使用，表示的是缓冲区中的数据量
   const char *begin() { return buf_.begin(); }
-  int size() { return buf_.size(); }
+  int size() { return static_cast<int>(buf_.size()); }
   // 从缓冲区中读取出来多少数据，就需要Pop多少数据
-  void Pop(size_t size) { buf_.Pop(size); }
+  void Pop(size_t size) { buf_.Pop(static_cast<int>(size)); }
   // 如果缓冲区之外还有更多数据，返回true
   virtual bool HasMoreDataToLoad() { return false; }
   // 如果缓冲区之外还有更多数据，就尝试填充缓冲区。否则什么也不做

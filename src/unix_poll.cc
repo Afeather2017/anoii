@@ -56,7 +56,7 @@ void UPoll::FillActivedChannels(
 bool UPoll::HasChannel(Channel *channel) const {
   loop_->AssertIfOutLoopThread();
   auto iter = fd_channels_.find(channel->GetFd());
-  assert(channel->GetIndex() < plfds_.size());
+  assert(channel->GetIndex() < static_cast<int>(plfds_.size()));
   return iter != fd_channels_.cend();
 }
 
@@ -66,7 +66,7 @@ void UPoll::UpdateChannel(Channel *channel) {
   if (channel->GetIndex() < 0) {
     assert(channel->GetFd() >= 0);
     assert(fd_channels_.find(channel->GetFd()) == fd_channels_.cend());
-    channel->SetIndex(plfds_.size());
+    channel->SetIndex(static_cast<int>(plfds_.size()));
     struct pollfd pfd{};
     pfd.events = channel->GetEvents();
     pfd.fd = channel->GetFd();
@@ -76,8 +76,8 @@ void UPoll::UpdateChannel(Channel *channel) {
     assert(fd_channels_.find(channel->GetFd()) != fd_channels_.cend());
     assert(fd_channels_[channel->GetFd()] == channel);
     assert(channel->GetIndex() >= 0);
-    assert(channel->GetIndex() < plfds_.size());
-    auto &pfd = plfds_[channel->GetIndex()];
+    assert(channel->GetIndex() < static_cast<int>(plfds_.size()));
+    auto &pfd = plfds_[static_cast<size_t>(channel->GetIndex())];
     assert(-(pfd.fd + 1) == channel->GetFd() || channel->GetFd() == pfd.fd);
     pfd.events = channel->GetEvents();
     pfd.revents = 0;  // TODO(afeather):why??
@@ -98,16 +98,16 @@ bool UPoll::RemoveChannel(Channel *channel) {
   assert(iter != fd_channels_.cend());
   assert(iter->second == channel);
   assert(channel->GetIndex() >= 0);
-  assert(channel->GetIndex() < plfds_.size());
-  auto &pfd = plfds_[channel->GetIndex()];
+  assert(channel->GetIndex() < static_cast<int>(plfds_.size()));
+  auto &pfd = plfds_[static_cast<size_t>(channel->GetIndex())];
   assert(-(pfd.fd + 1) == channel->GetFd() || channel->GetFd() == pfd.fd);
   fd_channels_.erase(iter);
-  if (channel->GetIndex() + 1 < plfds_.size()) {
+  if (channel->GetIndex() + 1 < static_cast<int>(plfds_.size())) {
     int end_fd =
         plfds_.back().fd > 0 ? plfds_.back().fd : -(plfds_.back().fd + 1);
     assert(fd_channels_.count(end_fd) > 0);
     fd_channels_[end_fd]->SetIndex(channel->GetIndex());
-    std::swap(plfds_.back(), plfds_[channel->GetIndex()]);
+    std::swap(plfds_.back(), plfds_[static_cast<size_t>(channel->GetIndex())]);
   }
   channel->SetIndex(-1);
   plfds_.pop_back();

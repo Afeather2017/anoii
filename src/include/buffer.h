@@ -22,15 +22,19 @@ class Buffer {
       : head_{prepend_size}
       , tail_{prepend_size}
       , prepend_{prepend_size}
-      , data_(initial_size) {
+      , data_(static_cast<size_t>(initial_size)) {
     assert(initial_size >= prepend_size);
   }
   ssize_t ReadFd(int fd, int *err);
   void Shrink();
   void Append(const char *data, int size);
-  void Append(std::string_view sv) { Append(sv.data(), sv.size()); }
+  void Append(std::string_view sv) {
+    Append(sv.data(), static_cast<int>(sv.size()));
+  }
   void Prepend(const char *data, int size);
-  void Prepend(std::string_view sv) { Prepend(sv.data(), sv.size()); }
+  void Prepend(std::string_view sv) {
+    Prepend(sv.data(), static_cast<int>(sv.size()));
+  }
   void Pop(int size) {
     assert(tail_ - head_ >= size);
     head_ += size;
@@ -47,7 +51,7 @@ class Buffer {
   int ReadableBytes() { return tail_ - head_; }
   bool Empty() { return head_ == tail_; }
   char *Data() { return data_.data(); }
-  size_t size() { return tail_ - head_; }
+  size_t size() { return static_cast<size_t>(tail_ - head_); }
 
  private:
   // 将区间[head, tail)的内容移动到index处，没有处理空间不足的情况

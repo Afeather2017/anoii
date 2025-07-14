@@ -6,8 +6,9 @@
 #include "inet_addr.h"
 #include "tcp_server.h"
 void ReadCb(std::shared_ptr<TcpConnection> conn, Buffer *buf) {
+  (void)conn;
   printf("readed %*s\n", (int)buf->size(), buf->begin());
-  buf->Pop(buf->size());
+  buf->Pop(static_cast<int>(buf->size()));
 }
 int main() {
   EventLoop loop{};

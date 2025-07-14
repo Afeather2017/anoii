@@ -102,11 +102,11 @@ void HttpRequest::Process(Buffer *buf) {
         return;
       }
 
-      buf->Pop(target_end_idx + 1);
+      buf->Pop(static_cast<int>(target_end_idx) + 1);
       clrf_idx -= target_end_idx + 1;
       std::string version{buf->begin(), static_cast<size_t>(clrf_idx)};
       assert(0 == memcmp(buf->begin() + clrf_idx, "\r\n", 2));
-      buf->Pop(clrf_idx + 2);
+      buf->Pop(static_cast<int>(clrf_idx) + 2);
       state_ = HttpParseState::kExpectHeaderLine;
     } else if (state_ == HttpParseState::kExpectHeaderLine) {
       // field-line     = field-name ":" OWS field-value OWS
@@ -144,7 +144,7 @@ void HttpRequest::Process(Buffer *buf) {
       std::string_view field_content{line.substr(colon_idx + 1, line.size())};
       field_content = strip(field_content);
       headers_.emplace(std::move(field_name), field_content);
-      buf->Pop(clrf_idx + 2);
+      buf->Pop(static_cast<int>(clrf_idx) + 2);
     } else if (state_ == HttpParseState::kExpectBody) {
       // message-body = *OCTET
       // RFC文档：
@@ -153,7 +153,8 @@ void HttpRequest::Process(Buffer *buf) {
       // Request message framing is independent of method semantics.
       auto content_length_iter = headers_.find("content-length");
       if (content_length_iter != headers_.end()) {
-        if (buf->size() >= std::stoi(content_length_iter->second)) {
+        if (static_cast<ssize_t>(buf->size()) >=
+            std::stoi(content_length_iter->second)) {
           state_ = HttpParseState::kDone;
         }
         return;

@@ -21,19 +21,19 @@ class Channel final {
   void Handle();
   EventLoop *GetLoop() { return loop_; }
   void EnableRead() {
-    events_ |= Channel::kReadEvent;
+    events_ |= static_cast<short>(Channel::kReadEvent);
     Update();
   }
   void DisableRead() {
-    events_ &= ~Channel::kReadEvent;
+    events_ &= ~static_cast<short>(Channel::kReadEvent);
     Update();
   }
   void EnableWrite() {
-    events_ |= Channel::kWriteEvent;
+    events_ |= static_cast<short>(Channel::kWriteEvent);
     Update();
   }
   void DisableWrite() {
-    events_ &= ~Channel::kWriteEvent;
+    events_ &= ~static_cast<short>(Channel::kWriteEvent);
     Update();
   }
   bool IsWriting() { return events_ & Channel::kWriteEvent; };
@@ -55,7 +55,8 @@ class Channel final {
   }
   std::string to_string() {
     char buf[1024];
-    sprintf(buf, "%p{fd=%d,events=%hx}", this, fd_, events_);
+    auto p = static_cast<void *>(this);
+    sprintf(buf, "%p{fd=%d,events=%hx}", p, fd_, events_);
     return buf;
   }
   static const int kNoEvent;

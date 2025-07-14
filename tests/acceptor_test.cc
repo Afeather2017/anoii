@@ -9,8 +9,8 @@
 #include "logger.h"
 int main() {
   EventLoop loop{};
-  InetAddr addr{1234};
-  Acceptor acceptor{&loop, addr};
+  InetAddr bind_addr{1234};
+  Acceptor acceptor{&loop, bind_addr};
   acceptor.SetNewConnectionCallback([](int fd, InetAddr *addr) {
     Info("new connection to {}:{}", addr->GetIp(), addr->GetPort());
     const char *str = "How dare you??";

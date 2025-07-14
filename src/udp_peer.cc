@@ -49,7 +49,7 @@ void UdpPeer::OnMessage() {
   InetAddr peer{};
   auto *peer_addr = peer.GetSockAddr();
   socklen_t len = sizeof(*peer.GetSockAddr());
-  int size;
+  ssize_t size;
   if (!binded_addr_) {
     Fatal("Tries recvfrom an unbinded UDP socket");
   }
@@ -62,11 +62,11 @@ void UdpPeer::OnMessage() {
                       &len);
     if (size > 0) {
       if (!auto_buffer_size_) {
-        if (size < buffer_.size()) break;
+        if (size < static_cast<ssize_t>(buffer_.size())) break;
         Error("Package corrupted, ignore it.");
         return;
       }
-      if (size >= buffer_.size()) {
+      if (size >= static_cast<ssize_t>(buffer_.size())) {
         // UDP的包的长度字段包括了首部的长度，所以不是65535
         if (buffer_.size() * 2 >= 65527 + 1) {
           buffer_.resize(65527 + 1);
@@ -106,15 +106,16 @@ void UdpPeer::OnMessage() {
   // 啧，坑真多……只有缓冲区比size大才可能表明接收的是整个包而不是半个。
   // 如果没有保证尽量接收，即auto_buffer_size_=false，那么就有可能出现这种情况
   assert(size >= 0);
-  assert(size < buffer_.size());  // Package corrupted
-  readable_cb_(this, peer, buffer_.data(), size);
+  assert(size < static_cast<ssize_t>(buffer_.size()));  // Package corrupted
+  readable_cb_(this, peer, buffer_.data(), static_cast<int>(size));
 }
 
 void UdpPeer::SendTo(const char *data, int size, InetAddr &addr) {
   assert(size > 0);
   auto *sock_addr = addr.GetSockAddr();
   for (;;) {
-    int sent = ::sendto(fd_, data, size, 0, sock_addr, sizeof(*sock_addr));
+    ssize_t sent = ::sendto(
+        fd_, data, static_cast<size_t>(size), 0, sock_addr, sizeof(*sock_addr));
     if (sent == size) {
       if (!binded_addr_) {
         binded_addr_ = true;
@@ -168,7 +169,7 @@ void UdpPeer::SendTo(const char *data, int size, InetAddr &addr) {
 }
 
 void UdpPeer::SendTo(std::string_view str, InetAddr &addr) {
-  SendTo(str.data(), str.size(), addr);
+  SendTo(str.data(), static_cast<int>(str.size()), addr);
 }
 
 UdpPeer::~UdpPeer() {

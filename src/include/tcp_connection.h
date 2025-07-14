@@ -78,7 +78,7 @@ class TcpConnection final : public std::enable_shared_from_this<TcpConnection> {
   uint64_t id_;
   // 1GB大小限制，大概够应付多数场景了吧？
   long long watermark_{1024 * 1024 * 1024};
-  EventLoop *loop_;
+  EventLoop *loop_{};
   Channel channel_;
   InetAddr local_;
   InetAddr peer_;

@@ -100,8 +100,8 @@ void EventLoop::DoPeddingFunctors() {
 }
 
 void EventLoop::WakeUp() {
-  uint64_t t;
-  int n = ::write(wakeup_fd, &t, sizeof(t));
+  uint64_t t = 0;
+  ssize_t n = ::write(wakeup_fd, &t, sizeof(t));
   if (n != sizeof(t)) {
     Error("eventfd write returns {}, expect {}", n, sizeof(t));
   }
