@@ -44,3 +44,14 @@ void Channel::Reset(EventLoop *loop) {
   Channel another{loop};
   *this = std::move(another);
 }
+
+std::string Channel::to_string() {
+  char buf[1024];
+  auto p = static_cast<void *>(this);
+  int last = sprintf(buf, "%p{fd=%d,events=", p, fd_);
+  if (events_ & kReadEvent) last += sprintf(buf + last, "kReadEvent|");
+  if (events_ & kWriteEvent) last += sprintf(buf + last, "kWriteEvent|");
+  if (buf[last - 1] == '=') last += sprintf(buf + last, "kNoEvent|");
+  buf[last - 1] = '}';
+  return buf;
+}

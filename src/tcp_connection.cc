@@ -86,22 +86,32 @@ void TcpConnection::HandleRead() {
 
 void TcpConnection::HandleWrite() {
   loop_->AssertIfOutLoopThread();
+  // HandleWrite应该是在事件处理中调用的，
+  // 为了避免在其他地方调用，这里进行检查
+  assert(channel_.IsHandleEvents());
   char *data = output_buffer_->begin();
   int size = output_buffer_->ReadableBytes();
-  ssize_t ret = ::write(channel_.GetFd(), data, size);
+  ssize_t ret = ::write(channel_.GetFd(), data, static_cast<size_t>(size));
   Trace("Write {} byte to {} got ret={}", size, channel_.GetFd(), ret);
   if (ret < 0) {
     if (!(errno == EAGAIN || errno == EWOULDBLOCK)) {
       Error("write socket: {}", strerror(errno));
     }
   } else if (ret <= size) {
-    output_buffer_->Pop(ret);
+    output_buffer_->Pop(static_cast<int>(ret));
     if (output_buffer_->Empty()) {
       Trace("tcpid={} is disabled cuz buffer is empty", id_);
       channel_.DisableWrite();
       loop_->QueueInLoop(std::bind(write_cb_, shared_from_this()));
-      if (GetState() == kHalfShutdown) {
-        ShutdownUnsafe();
+      switch (GetState()) {
+        case kConnecting: break;
+        case kEstablished:
+          // HandleWrite()是在Channel中调用的，
+          // 所以不需要通过WakeUp来执行write_cb_。
+          // loop_->WakeUp();
+          break;
+        case kHalfShutdown: ShutdownUnsafe(); break;
+        case kDisconnected: break;
       }
     }
   }
@@ -143,6 +153,25 @@ void TcpConnection::HandleError(ssize_t read_ret, int err) {
        strerror(err));
 }
 
+// 用户可以发送部分数据，也可以发送完整数据，数据量是任意的。
+// 1. 数据量小，且用户发送的是部分数据
+//   这里数据量小的定义是，一次socket write就可以发送完所有的数据(保存
+//   到操作系统缓冲区里)。此时虽然socket关闭了写完成监听，但是poll会被
+//   wakeup一次，此后必将会调用一次write_cb_。
+// 2. 数据量小，且用户发送的是完整数据
+//   由于write_cb_至少会再调用一次，那么再次调用write_cb_，无数据可以发送，
+//   所以不会再wakeup一次，而socket的写完成时间监听已经关闭。避免了空转。
+// 3. 数据量大，且用户发送的是部分数据
+//   数据量大的含义是一次socket write无法发送完所有的数据。此时socket的
+//   写完成监听被开启，之后由HandleWrite来将剩下的数据发送。发送完成后，
+//   关闭写完成监听，但是由于HandleWrite是事件处理调用的，它添加了functor
+//   write_cb_，所以在下一次epoll之前会调用write_cb_
+// 4. 数据量大，且用户发送的是完整数据
+//   数据量大的含义是一次socket write无法发送完所有的数据。此时socket的
+//   写完成监听被开启，之后由HandleWrite来将剩下的数据发送。发送完成后，
+//   关闭写完成监听，但是由于HandleWrite是事件处理调用的，它添加了functor
+//   write_cb_，所以在下一次epoll之前会调用write_cb_。此时用户没数据发送，
+//   写监听又关闭了，所以避免了空转。
 void TcpConnection::Send(const char *data, size_t size) {
   // FIXME: 线程安全性不足
   // 调用这个函数后，data需要存在多久？
@@ -192,8 +221,9 @@ void TcpConnection::SendUnsafe(const char *data, size_t size) {
           data + ret, static_cast<int>(static_cast<ssize_t>(size) - ret));
       channel_.EnableWrite();
     } else {
-      // 当前数据发送完了，所以不需要监听
+      // 当前数据发送完了，所以不需要监听，但是需要开启唤醒来调用write_cb_
       loop_->QueueInLoop(std::bind(write_cb_, shared_from_this()));
+      loop_->WakeUp();
     }
   }
   // 考虑这样一种情况:

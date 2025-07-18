@@ -1,4 +1,5 @@
 #pragma once
+#include <string_view>
 #ifndef TCP_CONNECTION_H
 #define TCP_CONNECTION_H
 #include <any>

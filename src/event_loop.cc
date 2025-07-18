@@ -100,8 +100,10 @@ void EventLoop::DoPeddingFunctors() {
 }
 
 void EventLoop::WakeUp() {
-  uint64_t t = 0;
+  uint64_t t = 1;
   ssize_t n = ::write(wakeup_fd, &t, sizeof(t));
+  Trace(
+      "{} Try to waked up by eventfd {}", static_cast<void *>(this), wakeup_fd);
   if (n != sizeof(t)) {
     Error("eventfd write returns {}, expect {}", n, sizeof(t));
   }
@@ -120,7 +122,8 @@ void EventLoop::InitWakeupFd() {
 
 void EventLoop::HandleWakeUpRead() {
   uint64_t t = 1;
-  int n = ::read(wakeup_fd, &t, sizeof(t));
+  ssize_t n = ::read(wakeup_fd, &t, sizeof(t));
+  Trace("{} Waked up by eventfd {}", static_cast<void *>(this), wakeup_fd);
   if (n != sizeof(t)) {
     Error("eventfd read returns {}, expect {}", n, sizeof(t));
   }

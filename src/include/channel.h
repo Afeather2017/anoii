@@ -19,6 +19,7 @@ class Channel final {
   void SetFd(int fd) { fd_ = fd; }
   void Reset(EventLoop *loop);
   void Handle();
+  bool IsHandleEvents() { return is_handling_events_; }
   EventLoop *GetLoop() { return loop_; }
   void EnableRead() {
     events_ |= static_cast<short>(Channel::kReadEvent);
@@ -53,12 +54,7 @@ class Channel final {
     events_ = 0;
     Update();
   }
-  std::string to_string() {
-    char buf[1024];
-    auto p = static_cast<void *>(this);
-    sprintf(buf, "%p{fd=%d,events=%hx}", p, fd_, events_);
-    return buf;
-  }
+  std::string to_string();
   static const int kNoEvent;
   static const int kReadEvent;
   static const int kWriteEvent;
