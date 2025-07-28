@@ -11,28 +11,24 @@
 #include "event_loop.h"
 #include "logger.h"
 #include "socket.h"
-static void DefaultReadCb(std::shared_ptr<TcpConnection> ptr, Buffer *buf) {
+void DefaultReadCb(std::shared_ptr<TcpConnection> ptr, Buffer *buf) {
   buf->Pop(static_cast<int>(buf->size()));
   Info("tcpid={} called tries call an invalid read cb", ptr->GetId());
 }
 
-static void DefaultWriteCb(std::shared_ptr<TcpConnection> ptr) {
+void DefaultWriteCb(std::shared_ptr<TcpConnection> ptr) {
   Info("tcpid={} called tries call an invalid write cb", ptr->GetId());
 }
 
-static void DefaultConnCb(std::shared_ptr<TcpConnection> ptr) {
+void DefaultConnCb(std::shared_ptr<TcpConnection> ptr) {
   Info("tcpid={} called tries call an invalid conn cb", ptr->GetId());
 }
 
-static void DefaultCloseCb(std::shared_ptr<TcpConnection> ptr) {
+void DefaultCloseCb(std::shared_ptr<TcpConnection> ptr) {
   Info("tcpid={} called tries call an invalid close cb", ptr->GetId());
 }
 
-static void DefaultErrorCb(std::shared_ptr<TcpConnection> ptr) {
-  Info("tcpid={} called tries call an invalid error cb", ptr->GetId());
-}
-
-static void DefaultHighWatermarkCb(std::shared_ptr<TcpConnection> ptr) {
+void DefaultHighWatermarkCb(std::shared_ptr<TcpConnection> ptr) {
   Warn("tcpid={} called tries call an invalid high watermark cb", ptr->GetId());
   ptr->Shutdown();
 }

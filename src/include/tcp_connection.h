@@ -93,4 +93,10 @@ class TcpConnection final : public std::enable_shared_from_this<TcpConnection> {
   std::function<void(std::shared_ptr<TcpConnection>)> watermark_cb_;
   std::any context_;
 };
+
+void DefaultReadCb(std::shared_ptr<TcpConnection> ptr, Buffer *buf);
+void DefaultWriteCb(std::shared_ptr<TcpConnection> ptr);
+void DefaultConnCb(std::shared_ptr<TcpConnection> ptr);
+void DefaultCloseCb(std::shared_ptr<TcpConnection> ptr);
+void DefaultHighWatermarkCb(std::shared_ptr<TcpConnection> ptr);
 #endif  // TCP_CONNECTION_H

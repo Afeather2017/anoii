@@ -28,6 +28,10 @@ class TcpClient final {
       std::function<void(std::shared_ptr<TcpConnection>)> cb) {
     write_cb_ = cb;
   }
+  void SetHighWatermarkCallback(
+      const std::function<void(std::shared_ptr<TcpConnection>)> &cb) {
+    watermark_cb_ = cb;
+  }
   ~TcpClient();
 
  private:
@@ -42,6 +46,7 @@ class TcpClient final {
   // TcpConnection中带有缓冲区，所以这两回调函数实际上是处理缓冲区的。
   std::function<void(std::shared_ptr<TcpConnection>, Buffer *)> readable_cb_;
   std::function<void(std::shared_ptr<TcpConnection>)> write_cb_;
+  std::function<void(std::shared_ptr<TcpConnection>)> watermark_cb_;
   static long long id_;
 };
 #endif  // TCP_CLIENT_H

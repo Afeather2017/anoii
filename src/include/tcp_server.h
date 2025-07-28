@@ -29,6 +29,10 @@ class TcpServer final {
       const std::function<void(std::shared_ptr<TcpConnection>)> &cb) {
     write_cb_ = cb;
   }
+  void SetHighWatermarkCallback(
+      const std::function<void(std::shared_ptr<TcpConnection>)> &cb) {
+    watermark_cb_ = cb;
+  }
 
  private:
   void RemoveConnection(std::shared_ptr<TcpConnection> conn);
@@ -36,6 +40,7 @@ class TcpServer final {
   std::function<void(std::shared_ptr<TcpConnection>)> conn_cb_;
   std::function<void(std::shared_ptr<TcpConnection>, Buffer *)> readable_cb_;
   std::function<void(std::shared_ptr<TcpConnection>)> write_cb_;
+  std::function<void(std::shared_ptr<TcpConnection>)> watermark_cb_;
   // 如果没有这个映射，那么当用户不持有std::shared_ptr<TcpConnection>的时候，
   // 引用计数降为0，马上就会析构了，然而poller中的fd与std::unordered_map<int,
   // Channel*> fd_channels_没有删掉，所以依然可能调用回调，此时程序很可能崩溃。

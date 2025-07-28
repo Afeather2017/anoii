@@ -7,7 +7,12 @@
 #include "event_loop.h"
 #include "logger.h"
 #include "tcp_connection.h"
-TcpServer::TcpServer(EventLoop *loop, const InetAddr &addr) : loop_{loop} {
+TcpServer::TcpServer(EventLoop *loop, const InetAddr &addr)
+    : conn_cb_{DefaultConnCb}
+    , readable_cb_{DefaultReadCb}
+    , write_cb_{DefaultWriteCb}
+    , watermark_cb_{DefaultHighWatermarkCb}
+    , loop_{loop} {
   acceptor_ = new Acceptor{loop, addr, 4, true, true};
   // 据说某些C++编译器会让new返回nullptr而不是throw exception.
   assert(acceptor_);

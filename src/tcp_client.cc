@@ -8,7 +8,11 @@
 #include "inet_addr.h"
 #include "socket.h"
 #include "tcp_connection.h"
-TcpClient::TcpClient(EventLoop *loop, const InetAddr &addr) {
+TcpClient::TcpClient(EventLoop *loop, const InetAddr &addr)
+    : conn_cb_{DefaultConnCb}
+    , readable_cb_{DefaultReadCb}
+    , write_cb_{DefaultWriteCb}
+    , watermark_cb_{DefaultHighWatermarkCb} {
   loop_ = loop;
   connector_ = std::make_unique<Connector>(loop, addr);
   connector_->SetNewConnCb(std::bind(&TcpClient::NewConnection,
