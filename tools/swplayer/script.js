@@ -473,7 +473,6 @@ function renderSongs(songs) {
     songItem.innerHTML = `
       <div class="song-info">
         <div class="song-title">${songName}</div>
-        <div class="song-artist">未知艺术家</div>
       </div>
     `;
 
@@ -527,9 +526,9 @@ function searchSongs() {
 
       resultItem.addEventListener('click', () => {
         // 在搜索结果中播放歌曲
-        state.currentSongs = state.searchResults.map(i => i.name);
+        state.currentSongs = state.searchResults.map(i => i);
         const index = state.searchResults.findIndex(i => i.name === item.name);
-        playSong(item.name, index);
+        playSong(item, index);
       });
 
       elements.searchResultsList.appendChild(resultItem);
