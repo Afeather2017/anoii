@@ -49,6 +49,10 @@ void HttpServer::ReadCb(std::shared_ptr<TcpConnection> conn, Buffer *buf) {
   // 由于conn->Send的线程安全性不足，所以必须检查调用它的线程。
   loop_->AssertIfOutLoopThread();
   Context &context = conn->GetContext<Context>();
+  // Http1.1中，长链接复用是通过对头阻塞实现的，所以这里直接重新分配
+  if (context.request_->state_ == HttpParseState::kDone) {
+    context.request_ = std::make_shared<HttpRequest>();
+  }
   auto &request = context.request_;
   request->Process(buf);
   switch (request->state_) {
@@ -66,23 +70,20 @@ void HttpServer::ReadCb(std::shared_ptr<TcpConnection> conn, Buffer *buf) {
       auto iter = routers_.find(request->router_);
       if (iter == routers_.end()) {
         Info("No such router {}", request->router_);
-        // TODO: 将此处的返回更改为HttpResponse形式的返回
         conn->Send(kNotFoundString);
-        conn->Shutdown();
         break;
       }
       context.response_ = iter->second(*request);
       auto &response = context.response_;
       conn->Send(response->StartAndFieldToString());
       if (response->size()) {
-        conn->Send(response->begin(), response->size());
+        conn->Send(response->begin(), static_cast<size_t>(response->size()));
         // 因为conn->Send会确保所有数据都能够被发送，所以
         // 这里不需要继续检查实际发送的数据量。
-        response->Pop(response->size());
+        response->Pop(static_cast<size_t>(response->size()));
       }
       if (!response->HasMoreDataToLoad()) {
-        Debug("Send complete, shutdown conn {}", conn->GetId());
-        conn->Shutdown();
+        Debug("{} send complete", conn->GetId());
       }
       break;
   }
@@ -107,14 +108,13 @@ void HttpServer::WriteCb(std::shared_ptr<TcpConnection> conn) {
   auto &response = context.response_;
   if (response->HasMoreDataToLoad()) {
     response->LoadData();
-    conn->Send(response->begin(), response->size());
+    conn->Send(response->begin(), static_cast<size_t>(response->size()));
     // 因为conn->Send会确保所有数据都能够被发送，所以
     // 这里不需要继续检查实际发送的数据量。
     Debug("Write {}B data to {}", response->size(), conn->GetId());
-    response->Pop(response->size());
+    response->Pop(static_cast<size_t>(response->size()));
   } else {
-    Debug("Send complete, shutdown conn {}", conn->GetId());
-    conn->Shutdown();
+    Debug("{} send complete", conn->GetId());
   }
 }
 std::shared_ptr<HttpResponse> HttpServer::ReadFileAsResponse(
