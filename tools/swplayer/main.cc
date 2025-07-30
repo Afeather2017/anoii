@@ -40,7 +40,7 @@ class SWPlayerServer final {
         std::bind(&SWPlayerServer::ListMusic, this, std::placeholders::_1));
     srv_.AddRouter(
         "/get_lyirc",
-        std::bind(&SWPlayerServer::ListMusic, this, std::placeholders::_1));
+        std::bind(&SWPlayerServer::GetLyric, this, std::placeholders::_1));
     GetAllMusicFile();
     InitPlayList();
     GetAllLufs();
@@ -65,10 +65,10 @@ class SWPlayerServer final {
     std::stringstream ss;
     ss << '{';
     // 依据歌单列出音乐
-    int playlist_count = playlists_.size();
+    int playlist_count = static_cast<int>(playlists_.size());
     for (auto &[playlist, music] : playlists_) {
       ss << '"' << playlist << "\":[";
-      int count = music.size();
+      int count = static_cast<int>(music.size());
       for (auto &name : music) {
         count--;
         ss << fmt::format(
@@ -104,16 +104,16 @@ class SWPlayerServer final {
 
     std::string filepath = music_[name].path_;
     auto resp = std::make_unique<FileResponse>(filepath);
-    int file_size = std::filesystem::file_size(filepath);
+    int file_size = static_cast<int>(std::filesystem::file_size(filepath));
     resp->status_code_ = StatusCode::kSuccess;
-    resp->headers_["Accept-Ranges"] =
+    resp->headers_["accept-ranges"] =
         fmt::format("bytes 0-{}/{}", file_size - 1, file_size);
-    resp->headers_["Content-Length"] = std::to_string(file_size);
+    resp->headers_["content-length"] = std::to_string(file_size);
     resp->headers_["content-type"] = "audio/mp3";
-    resp->headers_["Cache-Control"] =
+    resp->headers_["cache-control"] =
         "no-store, no-cache, must-revalidate, max-age=0";
-    resp->headers_["Pragma"] = "no-cache";
-    resp->headers_["Expires"] = "0";
+    resp->headers_["pragma"] = "no-cache";
+    resp->headers_["expires"] = "0";
     return resp;
   }
   void GetAllMusicFile() {
@@ -191,7 +191,7 @@ class SWPlayerServer final {
   // 从歌单名字到音频名字的映射
   std::unordered_map<std::string, std::vector<std::string>> playlists_;
   const std::unordered_set<std::string> music_file_extensions_{
-      ".mp3", ".ogg", ".wav", ".aac"};
+      ".mp3", ".ogg", ".wav", ".aac", ".flac"};
 };
 int main(int argc, char **argv) {
   if (argc != 5) {
