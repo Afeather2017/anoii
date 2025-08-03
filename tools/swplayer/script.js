@@ -6,7 +6,9 @@ var state = {
   currentIndex: -1,             // 当前播放歌曲的索引
   playedSongIndexes: new Set(), // 播放过的歌，用于实现不重复的随机播放
   playing: false,               // 是否正在播放
-  playMode: 'sequential',       // 播放模式: sequential(顺序)/random(随机)
+  playMode: 'sequential',       // 播放模式: sequential(顺序)
+                                //           random(随机)
+                                //           loop(单曲循环)
   timer: null,                  // 定时器
   searchResults: [],            // 搜索结果
   volumeState: 'auto',          // 音量设置模式
@@ -371,6 +373,9 @@ function playPrevious() {
   if (state.playMode === 'random') {
     // 随机播放模式
     newIndex = randomSongIndexNoRepeat();
+  } else if (state.playMode === 'loop') {
+    // 单曲循环模式
+    newIndex = state.currentIndex;
   } else {
     // 顺序播放模式
     newIndex = state.currentIndex === 0 ? 
@@ -389,6 +394,9 @@ function playNext() {
   if (state.playMode === 'random') {
     // 随机播放模式
     newIndex = randomSongIndexNoRepeat();
+  } else if (state.playMode === 'loop') {
+    // 单曲循环模式
+    newIndex = state.currentIndex;
   } else {
     // 顺序播放模式
     newIndex = state.currentIndex === state.currentSongs.length - 1 ? 
@@ -405,10 +413,17 @@ function togglePlayMode() {
     state.playMode = 'random';
     elements.modeButton.textContent = '⤮';
     elements.modeButton.classList.add('active');
-  } else {
+  } else if (state.playMode === 'random') {
+    state.playMode = 'loop';
+    elements.modeButton.textContent = '①';
+    elements.modeButton.classList.remove('active');
+  } else if (state.playMode == 'loop') {
     state.playMode = 'sequential';
     elements.modeButton.textContent = '↻';
     elements.modeButton.classList.remove('active');
+  } else {
+    // WTF???
+    console.log('unknow playback mode:' + state.playMode);
   }
 }
 
