@@ -20,7 +20,8 @@ InetAddr::InetAddr() {
 
 InetAddr::InetAddr(std::string_view ip, uint16_t port) {
   addr_.sin_family = AF_INET;
-  assert(inet_pton(addr_.sin_family, ip.data(), &addr_.sin_addr.s_addr) > 0);
+  int ret = inet_pton(addr_.sin_family, ip.data(), &addr_.sin_addr.s_addr);
+  assert(ret > 0);
   addr_.sin_port = htons(port);
 }
 
@@ -28,8 +29,8 @@ uint16_t InetAddr::GetPort() const { return ntohs(addr_.sin_port); }
 std::string InetAddr::GetIp() const {
   static_assert(INET6_ADDRSTRLEN > INET_ADDRSTRLEN);
   char buf[INET6_ADDRSTRLEN + 1]{};
-  assert(buf ==
-         inet_ntop(addr_.sin_family, &addr_.sin_addr, buf, sizeof(addr_)));
+  auto *ptr = inet_ntop(addr_.sin_family, &addr_.sin_addr, buf, sizeof(addr_));
+  assert(ptr == buf);
   return std::string{buf};
 }
 
