@@ -14,7 +14,8 @@ int main() {
   acceptor.SetNewConnectionCallback([](int fd, InetAddr *addr) {
     Info("new connection to {}:{}", addr->GetIp(), addr->GetPort());
     const char *str = "How dare you??";
-    ::write(fd, str, strlen(str));
+    auto result = ::write(fd, str, strlen(str));
+    (void)result;
     close(fd);
   });
   loop.Loop();

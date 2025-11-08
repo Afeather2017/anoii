@@ -3,6 +3,7 @@
 #include <cctype>
 #include <sstream>
 #include <string>
+#include <string_view>
 
 #include "http_utils.h"
 #include "logger.h"
@@ -23,10 +24,25 @@
 bool HttpRequest::ParseTarget(std::string_view target) {
   auto spliter = target.find_first_of('?');
   if (spliter == target.npos) {
-    router_ = target;
-    return true;
+    spliter = target.size();
   }
-  router_ = target.substr(0, spliter);
+  // 处理router。router分为绝对路由和相对路由，比如
+  // http://localhost/a.html和/a.html
+  std::string_view router = target.substr(0, spliter);
+  // 避免通过这个访问到操作系统中的其他文件
+  if (router.find("..") != router.npos) return false;
+  if (router.size() > 4 && ::memcmp(router.data(), "http", 4) == 0) {
+    // 需要改为相对路径
+    auto pos = router.find("//");
+    if (pos == router.npos) return false;
+    router.remove_prefix(pos + 2);
+    pos = router.find("/");
+    if (pos == router.npos) return false;
+    router.remove_prefix(pos);
+  }
+  router_ = router;
+
+  if (spliter == target.size()) return true;
   std::string_view query{target.data() + spliter + 1,
                          target.size() - spliter - 1};
   while (!query.empty()) {
