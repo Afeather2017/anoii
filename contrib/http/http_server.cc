@@ -71,6 +71,7 @@ void HttpServer::ReadCb(std::shared_ptr<TcpConnection> conn, Buffer *buf) {
       if (iter == routers_.end()) {
         Info("No such router {}", request->router_);
         conn->Send(kNotFoundString);
+        conn->Shutdown();
         break;
       }
       context.response_ = iter->second(*request);

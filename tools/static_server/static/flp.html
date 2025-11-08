@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>五线谱识谱练习</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Arial', sans-serif;
+        }
+        
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background-color: #f5f5f5;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 800px;
+            width: 100%;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+        }
+        
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #333;
+        }
+        
+        .staff-container {
+            position: relative;
+            height: 200px;
+            margin: 30px 0;
+            border: 1px solid #ddd;
+            background-color: #fff;
+            overflow: hidden;
+        }
+        
+        .staff-line {
+            position: absolute;
+            width: 100%;
+            height: 1px;
+            background-color: #000;
+        }
+        
+        .note {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background-color: black;
+            border-radius: 50%;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        
+        .options-container {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin: 20px 0;
+        }
+        
+        .option {
+            padding: 15px;
+            background-color: #f0f0f0;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 18px;
+            transition: background-color 0.3s;
+            color: black;
+        }
+        
+        .option:hover {
+            background-color: #e0e0e0;
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+        
+        button {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        
+        button:hover {
+            background-color: #45a049;
+        }
+        
+        .stats {
+            margin-top: 20px;
+            text-align: center;
+            font-size: 18px;
+        }
+        
+        .correct {
+            background-color: #4CAF50 !important;
+            color: white;
+        }
+        
+        .incorrect {
+            background-color: #f44336 !important;
+            color: white;
+        }
+        
+        .ledger-line {
+            position: absolute;
+            width: 30px;
+            height: 1px;
+            background-color: #000;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        
+        .clef {
+            position: absolute;
+            font-size: 90px;
+            left: 20%;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+        
+        .bass-clef {
+            font-size: 90px;
+            top: 55%;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>五线谱识谱练习</h1>
+        
+        <div class="staff-container" id="staff">
+            <!-- 五线谱线和音符将通过JavaScript动态生成 -->
+        </div>
+        
+        <div class="options-container" id="options">
+            <!-- 选项将通过JavaScript动态生成 -->
+        </div>
+        
+        <div class="controls">
+            <button id="nextBtn">下一题</button>
+            <button id="resetBtn">重置统计</button>
+        </div>
+        
+        <div class="stats" id="stats">
+            <p>已答题: <span id="total">0</span> | 正确: <span id="correct">0</span> | 错误: <span id="wrong">0</span> | 正确率: <span id="accuracy">0%</span></p>
+        </div>
+    </div>
+
+    <script>
+        // 五线谱基础知识
+        // 高音谱号（G谱号）定义第二线为G音（sol）[4](@ref)
+        // 低音谱号（F谱号）定义第四线为F音（fa）[4](@ref)
+        // 音名CDEFGAB对应简谱1234567[6,7](@ref)
+        
+        // 高音谱表音符位置与音名映射（从下加三线到上加三线）
+        const trebleNotes = [
+            { line: -3,   name: "F3", number: "4" }, // 下加三线
+            { line: -2.5, name: "G3", number: "5" }, // 下加三间
+            { line: -2,   name: "A3", number: "6" }, // 下加二线
+            { line: -1.5, name: "B3", number: "7" }, // 下加二间
+            { line: -1,   name: "C4", number: "1" }, // 下加一线
+            { line: -0.5, name: "D4", number: "2" }, // 下加一间
+            { line: 0,    name: "E4", number: "3" }, // 第一线
+            { line: 0.5,  name: "F4", number: "4" }, // 第一间
+            { line: 1,    name: "G4", number: "5" }, // 第二线
+            { line: 1.5,  name: "A4", number: "6" }, // 第二间
+            { line: 2,    name: "B4", number: "7" }, // 第三线
+            { line: 2.5,  name: "C5", number: "1" }, // 第三间
+            { line: 3,    name: "D5", number: "2" }, // 第四线
+            { line: 3.5,  name: "E5", number: "3" }, // 第四间
+            { line: 4,    name: "F5", number: "4" }, // 第五线
+            { line: 4.5,  name: "G5", number: "5" }, // 上加一间
+            { line: 5,    name: "A5", number: "6" }, // 上加一线
+            { line: 5.5,  name: "B5", number: "7" }, // 上加二间
+            { line: 6,    name: "C6", number: "1" }, // 上加二线
+            { line: 6.5,  name: "D6", number: "2" }, // 上加三间
+            { line: 7,    name: "E6", number: "3" }  // 上加三线
+        ];
+        
+        // 低音谱表音符位置与音名映射（从下加三线到上加三线）
+        const bassNotes = [
+            { line: -3,   name: "A1", number: "6" }, // 下加三线
+            { line: -2.5, name: "B1", number: "7" }, // 下加三间
+            { line: -2,   name: "C2", number: "1" }, // 下加二线
+            { line: -1.5, name: "D2", number: "2" }, // 下加二间
+            { line: -1,   name: "E2", number: "3" }, // 下加一线
+            { line: -0.5, name: "F2", number: "4" }, // 下加一间
+            { line: 0,    name: "G2", number: "5" }, // 第一线
+            { line: 0.5,  name: "A2", number: "6" }, // 第一间
+            { line: 1,    name: "B2", number: "7" }, // 第二线
+            { line: 1.5,  name: "C3", number: "1" }, // 第二间
+            { line: 2,    name: "D3", number: "2" }, // 第三线
+            { line: 2.5,  name: "E3", number: "3" }, // 第三间
+            { line: 3,    name: "F3", number: "4" }, // 第四线
+            { line: 3.5,  name: "G3", number: "5" }, // 第四间
+            { line: 4,    name: "A3", number: "6" }, // 第五线
+            { line: 4.5,  name: "B3", number: "7" }, // 上加一间
+            { line: 5,    name: "C4", number: "1" }, // 上加一线
+            { line: 5.5,  name: "D4", number: "2" }, // 上加二间
+            { line: 6,    name: "E4", number: "3" }, // 上加二线
+            { line: 6.5,  name: "F4", number: "4" }, // 上加三间
+            { line: 7,    name: "G4", number: "5" }  // 上加三线
+        ];
+
+        // 全局变量
+        let currentNote = null;
+        let currentClef = "treble"; // 默认高音谱号
+        let totalQuestions = 0;
+        let correctAnswers = 0;
+        let wrongAnswers = 0;
+        
+        // DOM元素
+        const staffElement = document.getElementById("staff");
+        const optionsElement = document.getElementById("options");
+        const nextButton = document.getElementById("nextBtn");
+        const resetButton = document.getElementById("resetBtn");
+        const totalElement = document.getElementById("total");
+        const correctElement = document.getElementById("correct");
+        const wrongElement = document.getElementById("wrong");
+        const accuracyElement = document.getElementById("accuracy");
+        
+        // 初始化
+        document.addEventListener("DOMContentLoaded", function() {
+            generateQuestion();
+            nextButton.addEventListener("click", generateQuestion);
+            resetButton.addEventListener("click", resetStats);
+        });
+        
+        // 生成问题
+        function generateQuestion() {
+            // 清空五线谱和选项
+            staffElement.innerHTML = "";
+            optionsElement.innerHTML = "";
+            
+            // 随机选择谱号（高音或低音）
+            currentClef = Math.random() > 0.5 ? "treble" : "bass";
+            
+            // 获取对应谱号的音符列表
+            const notes = currentClef === "treble" ? trebleNotes : bassNotes;
+            
+            // 随机选择一个音符（排除过于简单或困难的音符）
+            const noteIndex = Math.floor(Math.random() * (notes.length - 6)) + 3;
+            currentNote = notes[noteIndex];
+            
+            // 绘制五线谱
+            drawStaff();
+            
+            console.log("node: line=" + currentNote.line +
+                        " name=" + currentNote.name + 
+                        " number=" + currentNote.number);
+            // 绘制音符
+            drawNote(currentNote.line);
+            
+            // 生成选项
+            generateOptions(notes, noteIndex);
+        }
+        
+        // 绘制五线谱
+        function drawStaff() {
+            // 绘制五条线
+            for (let i = 0; i < 5; i++) {
+                const line = document.createElement("div");
+                line.className = "staff-line";
+                line.style.top = `${50 + i * 20}px`;
+                staffElement.appendChild(line);
+            }
+            
+            // 绘制谱号
+            const clef = document.createElement("div");
+            clef.className = currentClef === "treble" ? "clef" : "clef bass-clef";
+            clef.textContent = currentClef === "treble" ? "𝄞" : "𝄢";
+            staffElement.appendChild(clef);
+        }
+        
+        // 绘制音符
+        function drawNote(linePosition) {
+            // 计算音符的垂直位置（五线谱第一线的line为0）
+            const staffCenter = 120;
+            const noteTop = staffCenter - linePosition * 2 * 10;
+            console.log("draw at: " + noteTop);
+            
+            // 创建音符元素
+            const note = document.createElement("div");
+            note.className = "note";
+            note.style.top = `${noteTop}px`;
+            staffElement.appendChild(note);
+            
+            // 如果需要，绘制加线
+            if (linePosition < 0 || linePosition > 4) {
+                drawLedgerLines(linePosition, noteTop);
+            }
+        }
+        
+        // 绘制加线
+        function drawLedgerLines(linePosition, noteTop) {
+            // 计算需要绘制的加线数量
+            let linesToDraw = [];
+            
+            if (linePosition < 0) {
+                // 下加线
+                for (let i = -1; i >= linePosition; i--) {
+                    linesToDraw.push(i);
+                }
+            } else if (linePosition > 4) {
+                // 上加线
+                for (let i = 5; i <= linePosition; i++) {
+                    linesToDraw.push(i);
+                }
+            }
+            
+            // 绘制加线
+            linesToDraw.forEach(line => {
+                const ledgerLine = document.createElement("div");
+                ledgerLine.className = "ledger-line";
+                const lineTop = 130 - line * 2 * 10;
+                ledgerLine.style.top = `${lineTop}px`;
+                console.log("draw ledgerline=" + line + " at " + lineTop);
+                staffElement.appendChild(ledgerLine);
+            });
+        }
+        
+        // 生成选项
+        function generateOptions(notes, correctIndex) {
+            const correctNote = notes[correctIndex];
+            
+            // 创建选项数组（包含正确答案）
+            let options = [
+                { value: "name", text: correctNote.name, isCorrect: true },
+                { value: "number", text: correctNote.number, isCorrect: true }
+            ];
+            
+            // 生成错误选项（随机选择其他音符）
+            const allNotes = currentClef === "treble" ? trebleNotes : bassNotes;
+            const wrongOptions = [];
+            
+            while (wrongOptions.length < 6) {
+                const randomIndex = Math.floor(Math.random() * allNotes.length);
+                if (randomIndex !== correctIndex) {
+                    const wrongNote = allNotes[randomIndex];
+                    
+                    // 随机选择显示音名或简谱
+                    const optionType = Math.random() > 0.5 ? "name" : "number";
+                    const optionText = optionType === "name" ? wrongNote.name : wrongNote.number;
+                    
+                    // 避免重复选项
+                    if (!wrongOptions.some(opt => opt.text === optionText) && 
+                        !options.some(opt => opt.text === optionText)) {
+                        wrongOptions.push({
+                            value: optionType,
+                            text: optionText,
+                            isCorrect: false
+                        });
+                    }
+                }
+            }
+            
+            // 合并选项并随机排序
+            options = options.concat(wrongOptions.slice(0, 6));
+            shuffleArray(options);
+            
+            // 创建选项按钮
+            options.forEach(option => {
+                const button = document.createElement("button");
+                button.className = "option";
+                button.textContent = option.text;
+                button.addEventListener("click", function() {
+                    checkAnswer(option.isCorrect, button);
+                });
+                optionsElement.appendChild(button);
+            });
+        }
+        
+        // 检查答案
+        function checkAnswer(isCorrect, button) {
+            totalQuestions++;
+            
+            if (isCorrect) {
+                correctAnswers++;
+                button.classList.add("correct");
+            } else {
+                wrongAnswers++;
+                button.classList.add("incorrect");
+                
+                // 高亮显示正确答案
+                const options = optionsElement.querySelectorAll(".option");
+                options.forEach(opt => {
+                    if (opt.textContent === currentNote.name || opt.textContent === currentNote.number) {
+                        opt.classList.add("correct");
+                    }
+                });
+            }
+            
+            // 禁用所有选项按钮
+            const options = optionsElement.querySelectorAll(".option");
+            options.forEach(opt => {
+                opt.disabled = true;
+            });
+            
+            // 更新统计信息
+            updateStats();
+        }
+        
+        // 更新统计信息
+        function updateStats() {
+            totalElement.textContent = totalQuestions;
+            correctElement.textContent = correctAnswers;
+            wrongElement.textContent = wrongAnswers;
+            
+            const accuracy = totalQuestions > 0 ? (correctAnswers / totalQuestions * 100).toFixed(1) : 0;
+            accuracyElement.textContent = `${accuracy}%`;
+        }
+        
+        // 重置统计
+        function resetStats() {
+            totalQuestions = 0;
+            correctAnswers = 0;
+            wrongAnswers = 0;
+            updateStats();
+            generateQuestion();
+        }
+        
+        // 辅助函数：随机打乱数组
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+    </script>
+</body>
+</html>
