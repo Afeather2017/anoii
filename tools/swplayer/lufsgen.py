@@ -3,6 +3,7 @@ import os
 import subprocess
 import sys
 import traceback
+import re
 
 def get_lufs(file_path):
     """运行FFmpeg命令获取LUFS值并解析结果"""
@@ -39,18 +40,50 @@ def get_lufs(file_path):
         print(f"处理文件 {file_path} 时出错: {e}", file=sys.stderr)
         return None
 
+compiled_reg = re.compile(r'.*\.((wav)|(mp3)|(ogg)|(aac)|(flac))$')
+
+
 def scan_audio_files(root_dir):
     """递归扫描音频文件并处理"""
-    audio_exts = ('.wav', '.mp3', '.ogg', '.aac')
     for foldername, _, filenames in os.walk(root_dir):
         for filename in filenames:
-            if filename.lower().endswith(audio_exts):
+            if compiled_reg.match(filename.lower()):
                 file_path = os.path.join(foldername, filename)
                 yield filename, file_path
 
+def usage():
+    print('Usage:')
+    print(f'    {sys.argv[0]} -r REGULAR_EXPRESSION')
+    print(f'    {sys.argv[0]} -t TYPE1 TYPE2 ...')
+    print(f'    {sys.argv[0]} -f MUSIC_FILE1 MUSIC_FILE2 ...')
+    print(f'    {sys.argv[0]}')
+
 def main():
-    root_dir = os.path.abspath('.')  # 获取当前目录的绝对路径
-    for filename, file_path in scan_audio_files(root_dir):
+    global compiled_reg
+    file_list = []
+    root_dir = os.path.abspath('.')
+    if len(sys.argv) > 2:
+        match_exp = None
+        if sys.argv[1] == '-t':
+            type_match = '|'.join([f'({suf})' for suf in sys.argv[2:]])
+            match_exp = f'.*\\.({type_match})$'
+        elif sys.argv[1] == '-r':
+            match_exp = sys.argv[2]
+        elif sys.argv[1] == '-f':
+            file_list = [(os.path.basename(f), f) for f in sys.argv[2:]]
+        else:
+            usage()
+            exit(1)
+        if match_exp != None:
+            compiled_reg = re.compile(match_exp)
+            file_list = scan_audio_files(root_dir)
+    elif len(sys.argv) == 1:
+        file_list = scan_audio_files(root_dir)
+    else:
+        usage()
+        exit(1)
+
+    for filename, file_path in file_list:
         lufs = get_lufs(file_path)
         if lufs is not None:
             # 按要求的格式输出结果
