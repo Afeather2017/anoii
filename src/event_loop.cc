@@ -43,7 +43,8 @@ void EventLoop::Loop() {
   AssertIfOutLoopThread();
   while (!done_) {
     actived_channels_.clear();
-    poller_->PollUntil(timer_queue_->SleepTime(), &actived_channels_);
+    int sleep_time = static_cast<int>(timer_queue_->SleepTime());
+    poller_->PollUntil(sleep_time, &actived_channels_);
     for (auto channel : actived_channels_) {
       channel->Handle();
     }

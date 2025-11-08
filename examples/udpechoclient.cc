@@ -15,7 +15,7 @@ mstime_t Send(mstime_t t) {
   int n =
       sprintf(echo_client_buffer, "mstime:%lld SendTime:%s", t, now.c_str());
   for (int i = n; i < 1472; i++) {
-    echo_client_buffer[i] = '0' + (i % 10);
+    echo_client_buffer[i] = static_cast<char>('0' + (i % 10));
   }
   cli.SendTo(echo_client_buffer, 1472, addr);
   return 1000;

@@ -121,7 +121,7 @@ void EPoller::FillActivedChannels(int num_events,
     channels->push_back(ch);
     assert(fd_channels_.find(ch->GetFd()) != fd_channels_.end());
     assert(fd_channels_.find(ch->GetFd())->second == event.data.ptr);
-    ch->SetReceivedEvents(event.events);
+    ch->SetReceivedEvents(static_cast<short>(event.events));
   }
 }
 

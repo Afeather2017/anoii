@@ -19,9 +19,9 @@ ssize_t Buffer::ReadFd(int fd, int *err) {
   if (ret < 0) {
     *err = errno;
   } else if (ret <= static_cast<ssize_t>(vec[0].iov_len)) {
-    tail_ += ret;
+    tail_ += static_cast<int>(ret);
   } else {
-    tail_ += vec[0].iov_len;
+    tail_ += static_cast<int>(vec[0].iov_len);
     Append(extra, static_cast<int>(ret - static_cast<ssize_t>(vec[0].iov_len)));
   }
   Trace("readed {} bytes from fd={}, now head={} tail={} err={} data.size={}",

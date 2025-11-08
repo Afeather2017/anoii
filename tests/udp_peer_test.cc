@@ -24,7 +24,7 @@ class TestAutoSize final {
     loop_.AddTimer(std::bind(&TestAutoSize::Timer, this, std::placeholders::_1),
                    10);
     for (unsigned i = 0; i < sizeof(buffer_); i++) {
-      char j = i % (10 + 26 + 26);
+      char j = static_cast<char>(i % (10 + 26 + 26));
       if (j < 10) {
         buffer_[i] = '0' + j;
       } else if (j - 10 < 26) {
@@ -78,7 +78,7 @@ class TestFixxedSize final {
     loop_.AddTimer(
         std::bind(&TestFixxedSize::Timer, this, std::placeholders::_1), 10);
     for (unsigned i = 0; i < sizeof(buffer_); i++) {
-      char j = i % (10 + 26 + 26);
+      char j = static_cast<char>(i % (10 + 26 + 26));
       if (j < 10) {
         buffer_[i] = '0' + j;
       } else if (j - 10 < 26) {

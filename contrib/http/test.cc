@@ -115,7 +115,7 @@ void HttpParseTest() {
         "GET /foo/bar?key=value&flag1&flag2=&%E4%BD%A0=%E5%A5%BD HTTP/1.1\r\n"
         "Host:     127.0.0.1:8888     \r\n"
         "\r\n"};
-    buf.Append(request.data(), request.size());
+    buf.Append(request.data(), static_cast<int>(request.size()));
     req.Process(&buf);
     assert(req.router_ == "/foo/bar");
     assert(req.state_ == HttpParseState::kDone);
@@ -136,7 +136,7 @@ void HttpParseTest() {
         "GET /foo/bar?key=value&flag1&flag2=&%E%B%A0=%E5%A5%BD HTTP/1.1\r\n"
         "Host:     127.0.0.1:8888     \r\n"
         "\r\n"};
-    buf.Append(request.data(), request.size());
+    buf.Append(request.data(), static_cast<int>(request.size()));
     req.Process(&buf);
     assert(req.state_ == HttpParseState::kRequestIsBad);
   }

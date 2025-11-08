@@ -47,7 +47,7 @@ void ConnCb(std::shared_ptr<TcpConnection> conn) {
   }
 }
 mstime_t TimerCb(mstime_t now) {
-  Info("{:.3f}MB/s", written / 1024. / 1024);
+  Info("{:.3f}MB/s", static_cast<double>(written) / 1024 / 1024);
   written = 0;
   return 1000;
 }
