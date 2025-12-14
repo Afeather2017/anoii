@@ -8,7 +8,7 @@
 #include "inet_addr.h"
 #include "socket.h"
 #include "tcp_connection.h"
-TcpClient::TcpClient(EventLoop *loop, const InetAddr &addr)
+TcpClient::TcpClient(EventLoop* loop, const InetAddr& addr)
     : conn_cb_{DefaultConnCb}
     , readable_cb_{DefaultReadCb}
     , write_cb_{DefaultWriteCb}
@@ -25,7 +25,7 @@ TcpClient::TcpClient(EventLoop *loop, const InetAddr &addr)
 
 long long TcpClient::id_ = 2e9 * 1e9;
 
-void TcpClient::NewConnection(int fd, const InetAddr &addr) {
+void TcpClient::NewConnection(int fd, const InetAddr& addr) {
   loop_->AssertIfOutLoopThread();
   InetAddr local = GetLocalAddr(fd);
   conn_ = std::make_shared<TcpConnection>(loop_, fd, ++id_, local, peer_);

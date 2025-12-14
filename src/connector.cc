@@ -10,7 +10,7 @@
 #include "logger.h"
 #include "socket.h"
 #include "timer_queue.h"
-Connector::Connector(EventLoop *loop, const InetAddr &addr)
+Connector::Connector(EventLoop* loop, const InetAddr& addr)
     : loop_{loop}, addr_{addr}, channel_{loop_} {}
 
 void Connector::Start() { ConnectOnce(); }
@@ -139,12 +139,12 @@ static bool IsSelfConn(int sockfd) {
   struct sockaddr_in local, peer;
   socklen_t len = sizeof(struct sockaddr_in);
   int ret =
-      ::getsockname(sockfd, reinterpret_cast<struct sockaddr *>(&local), &len);
+      ::getsockname(sockfd, reinterpret_cast<struct sockaddr*>(&local), &len);
   if (ret < 0) {
     Error("getsockname failed: {}", strerror(errno));
     return false;
   }
-  ret = ::getpeername(sockfd, reinterpret_cast<struct sockaddr *>(&peer), &len);
+  ret = ::getpeername(sockfd, reinterpret_cast<struct sockaddr*>(&peer), &len);
   if (ret < 0) {
     Error("getpeername failed: {}", strerror(errno));
     return false;

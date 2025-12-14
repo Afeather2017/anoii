@@ -19,19 +19,19 @@ class UdpPeer final {
   //              由于大多数包都小于1472字节（一个MTU大小-UDP头与IP头大小），
   //              所以默认设置为1472
   // addr       : 监听的IP地址
-  UdpPeer(EventLoop *loop, const InetAddr &addr, unsigned buffer_size = 1472);
-  explicit UdpPeer(EventLoop *loop, unsigned buffer_size = 1472);
+  UdpPeer(EventLoop* loop, const InetAddr& addr, unsigned buffer_size = 1472);
+  explicit UdpPeer(EventLoop* loop, unsigned buffer_size = 1472);
   void SetReadableCallback(
-      std::function<void(UdpPeer *, InetAddr &, char *, int)> cb) {
+      std::function<void(UdpPeer*, InetAddr&, char*, int)> cb) {
     readable_cb_ = cb;
   }
-  void SendTo(const char *data, int size, InetAddr &addr);
-  void SendTo(std::string_view str, InetAddr &addr);
+  void SendTo(const char* data, int size, InetAddr& addr);
+  void SendTo(std::string_view str, InetAddr& addr);
   ~UdpPeer();
 
  private:
   void OnMessage();
-  std::function<void(UdpPeer *, InetAddr &, char *, int)> readable_cb_{};
+  std::function<void(UdpPeer*, InetAddr&, char*, int)> readable_cb_{};
   std::vector<char> buffer_{};
   Channel channel_;
   InetAddr addr_;

@@ -7,7 +7,7 @@
 #include "event_loop.h"
 #include "logger.h"
 #include "tcp_connection.h"
-TcpServer::TcpServer(EventLoop *loop, const InetAddr &addr)
+TcpServer::TcpServer(EventLoop* loop, const InetAddr& addr)
     : conn_cb_{DefaultConnCb}
     , readable_cb_{DefaultReadCb}
     , write_cb_{DefaultWriteCb}
@@ -22,7 +22,7 @@ TcpServer::TcpServer(EventLoop *loop, const InetAddr &addr)
                                                 std::placeholders::_2));
 }
 
-void TcpServer::NewConnection(int peer_fd, InetAddr *peer_addr) {
+void TcpServer::NewConnection(int peer_fd, InetAddr* peer_addr) {
   // TODO:
   // 在此处对最大连接数量进行限制。
   // 原因是文件描述符用完了之后，问题就不好解决了。
@@ -46,7 +46,7 @@ void TcpServer::RemoveConnection(std::shared_ptr<TcpConnection> conn) {
 }
 
 TcpServer::~TcpServer() {
-  for (auto &[id, conn] : this->id_conn_) {
+  for (auto& [id, conn] : this->id_conn_) {
     conn->GetLoop()->RunInLoop(
         std::bind(&TcpConnection::DestroyConnection, conn));
     conn.reset();

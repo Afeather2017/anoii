@@ -8,7 +8,7 @@
 #include "inet_addr.h"
 #include "tcp_connection.h"
 #include "tcp_server.h"
-void ReadCb(std::shared_ptr<TcpConnection> conn, Buffer *buf) {
+void ReadCb(std::shared_ptr<TcpConnection> conn, Buffer* buf) {
   conn->Send(buf->begin(), buf->size());
   buf->Pop(static_cast<int>(buf->size()));
 }

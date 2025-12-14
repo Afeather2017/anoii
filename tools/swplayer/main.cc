@@ -21,7 +21,7 @@ struct MusicInfo {
 };
 class SWPlayerServer final {
  public:
-  SWPlayerServer(EventLoop *loop,
+  SWPlayerServer(EventLoop* loop,
                  InetAddr addr,
                  std::string_view search_path,
                  std::string home_page_filepath,
@@ -48,7 +48,7 @@ class SWPlayerServer final {
   }
 
  private:
-  std::shared_ptr<HttpResponse> GetLyric(const HttpRequest &req) {
+  std::shared_ptr<HttpResponse> GetLyric(const HttpRequest& req) {
     auto resp = std::make_unique<HttpResponse>();
     if (req.type_ != RequestType::kGet) {
       resp->status_code_ = StatusCode::kBadRequest;
@@ -56,7 +56,7 @@ class SWPlayerServer final {
     }
     return resp;
   }
-  std::shared_ptr<HttpResponse> ListMusic(const HttpRequest &req) {
+  std::shared_ptr<HttpResponse> ListMusic(const HttpRequest& req) {
     auto resp = std::make_unique<HttpResponse>();
     if (req.type_ != RequestType::kGet) {
       resp->status_code_ = StatusCode::kBadRequest;
@@ -66,10 +66,10 @@ class SWPlayerServer final {
     ss << '{';
     // 依据歌单列出音乐
     int playlist_count = static_cast<int>(playlists_.size());
-    for (auto &[playlist, music] : playlists_) {
+    for (auto& [playlist, music] : playlists_) {
       ss << '"' << playlist << "\":[";
       int count = static_cast<int>(music.size());
-      for (auto &name : music) {
+      for (auto& name : music) {
         count--;
         ss << fmt::format(
             "{{\"lufs\":{},\"name\":\"{}\"}}", music_[name].lufs_, name);
@@ -85,7 +85,7 @@ class SWPlayerServer final {
     resp->status_code_ = StatusCode::kSuccess;
     return resp;
   }
-  std::shared_ptr<HttpResponse> GetMusic(const HttpRequest &req) {
+  std::shared_ptr<HttpResponse> GetMusic(const HttpRequest& req) {
     if (req.type_ != RequestType::kGet) {
       return std::make_unique<HttpResponse>(StatusCode::kBadRequest);
     }
@@ -95,7 +95,7 @@ class SWPlayerServer final {
       return std::make_unique<HttpResponse>(StatusCode::kBadRequest,
                                             "Missing argument: music-name");
     }
-    const std::string &name = music_name_iter->second;
+    const std::string& name = music_name_iter->second;
     if (music_.count(name) == 0) {
       Info("Cannot found file {}", name);
       return std::make_unique<HttpResponse>(StatusCode::kBadRequest,
@@ -129,12 +129,12 @@ class SWPlayerServer final {
     }
   }
   void InitPlayList() {
-    for (auto &[name, info] : music_) {
+    for (auto& [name, info] : music_) {
       std::string playlist_name = info.path_.parent_path().filename();
       playlists_[playlist_name].push_back(name);
       playlists_["所有音乐"].push_back(name);
     }
-    for (auto &[playlist_name, _] : playlists_) {
+    for (auto& [playlist_name, _] : playlists_) {
       fmt::println("playlist {}", playlist_name);
     }
   }
@@ -193,7 +193,7 @@ class SWPlayerServer final {
   const std::unordered_set<std::string> music_file_extensions_{
       ".mp3", ".ogg", ".wav", ".aac", ".flac"};
 };
-int main(int argc, char **argv) {
+int main(int argc, char** argv) {
   if (argc != 5) {
     puts(
         "Usage: swplayer MUSIC_PATH HOME_PAGE_FILEPATH JS_FILEPATH "

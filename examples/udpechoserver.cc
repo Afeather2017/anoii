@@ -2,7 +2,7 @@
 #include "udp_peer.h"
 EventLoop loop{};
 InetAddr addr{9996};
-void ReadCb(UdpPeer *self, InetAddr &peer, char *data, int size) {
+void ReadCb(UdpPeer* self, InetAddr& peer, char* data, int size) {
   self->SendTo(data, size, peer);
 }
 int main() {

@@ -15,7 +15,7 @@
 const std::shared_ptr<HttpResponse> Context::default_response_ =
     std::make_shared<HttpResponse>(StatusCode::kInternalError,
                                    "Response was not initialized");
-HttpServer::HttpServer(EventLoop *loop, const InetAddr &addr)
+HttpServer::HttpServer(EventLoop* loop, const InetAddr& addr)
     : loop_{loop}, addr_{addr}, srv_{loop_, addr} {
   srv_.SetReadableCallback(std::bind(
       &HttpServer::ReadCb, this, std::placeholders::_1, std::placeholders::_2));
@@ -44,16 +44,16 @@ static const auto kBadRequestString =
     MakeResponseString(StatusCode::kBadRequest);
 static const auto kNotFoundString = MakeResponseString(StatusCode::kNotFound);
 
-void HttpServer::ReadCb(std::shared_ptr<TcpConnection> conn, Buffer *buf) {
+void HttpServer::ReadCb(std::shared_ptr<TcpConnection> conn, Buffer* buf) {
   Debug("Read from {}", conn->GetPeer().GetAddr());
   // 由于conn->Send的线程安全性不足，所以必须检查调用它的线程。
   loop_->AssertIfOutLoopThread();
-  Context &context = conn->GetContext<Context>();
+  Context& context = conn->GetContext<Context>();
   // Http1.1中，长链接复用是通过对头阻塞实现的，所以这里直接重新分配
   if (context.request_->state_ == HttpParseState::kDone) {
     context.request_ = std::make_shared<HttpRequest>();
   }
-  auto &request = context.request_;
+  auto& request = context.request_;
   request->Process(buf);
   switch (request->state_) {
     case HttpParseState::kExpectStartLine: break;
@@ -75,7 +75,7 @@ void HttpServer::ReadCb(std::shared_ptr<TcpConnection> conn, Buffer *buf) {
         break;
       }
       context.response_ = iter->second(*request);
-      auto &response = context.response_;
+      auto& response = context.response_;
       conn->Send(response->StartAndFieldToString());
       if (response->size()) {
         conn->Send(response->begin(), static_cast<size_t>(response->size()));
@@ -105,8 +105,8 @@ void HttpServer::ConnCb(std::shared_ptr<TcpConnection> conn) {
   }
 }
 void HttpServer::WriteCb(std::shared_ptr<TcpConnection> conn) {
-  Context &context = conn->GetContext<Context>();
-  auto &response = context.response_;
+  Context& context = conn->GetContext<Context>();
+  auto& response = context.response_;
   if (response->HasMoreDataToLoad()) {
     response->LoadData();
     conn->Send(response->begin(), static_cast<size_t>(response->size()));
@@ -119,7 +119,7 @@ void HttpServer::WriteCb(std::shared_ptr<TcpConnection> conn) {
   }
 }
 std::shared_ptr<HttpResponse> HttpServer::ReadFileAsResponse(
-    const std::string &path, const HttpRequest &req) {
+    const std::string& path, const HttpRequest& req) {
   Info("Get {}", path);
   if (req.type_ != RequestType::kGet) {
     return std::make_shared<HttpResponse>(StatusCode::kBadRequest);

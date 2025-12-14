@@ -16,15 +16,15 @@ enum class LogLevel {
 
 template <typename... Args>
 void LogBase(bool val,
-             const char *path,
-             const char *fn,
+             const char* path,
+             const char* fn,
              int line,
              LogLevel level,
              fmt::format_string<Args...> format,
-             Args &&...args) {
+             Args&&... args) {
   if (!val) return;
   std::string s = fmt::format(format, args...);
-  const char *p = nullptr;
+  const char* p = nullptr;
   switch (level) {
     case LogLevel::DEBUG_LEVEL: p = "DBG "; break;
     case LogLevel::TRACE_LEVEL: p = "TRCE"; break;
@@ -39,11 +39,11 @@ void LogBase(bool val,
 
 template <typename... Args>
 void LogFatal(bool val,
-              const char *path,
-              const char *fn,
+              const char* path,
+              const char* fn,
               int line,  // NOLINT
               fmt::format_string<Args...> format,
-              Args &&...args) {  // NOLINT
+              Args&&... args) {  // NOLINT
   if (val) {
     std::string s = fmt::format(format, args...);
     fmt::println("{}:{}:{}:{} {}", path, fn, line, GetNowTimeString(), s);

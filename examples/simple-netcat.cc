@@ -4,14 +4,14 @@
 #include "event_loop.h"
 #include "tcp_client.h"
 EventLoop loop{};
-void ReadCb(std::shared_ptr<TcpConnection> conn, Buffer *buf) {
+void ReadCb(std::shared_ptr<TcpConnection> conn, Buffer* buf) {
   (void)conn;
   size_t size = static_cast<size_t>(buf->ReadableBytes());
   auto result = write(STDOUT_FILENO, buf->begin(), size);
   (void)result;
   buf->Pop(buf->ReadableBytes());
 }
-int main(int argc, char **argv) {
+int main(int argc, char** argv) {
   if (argc < 3) {
     return 0;
   }

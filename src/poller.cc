@@ -4,11 +4,11 @@
 #include "epoller.h"
 #include "logger.h"
 #include "unix_poll.h"
-std::unique_ptr<Poller> Poller::PollerFactory(EventLoop *loop,
-                                              const char *poll,
+std::unique_ptr<Poller> Poller::PollerFactory(EventLoop* loop,
+                                              const char* poll,
                                               size_t size_hint) {
   if (strcmp(poll, "default") == 0) {
-    const char *anoii_poll = std::getenv("ANOII_POLL");
+    const char* anoii_poll = std::getenv("ANOII_POLL");
     if (anoii_poll == nullptr)
       return std::make_unique<EPoller>(loop, size_hint);
     poll = anoii_poll;

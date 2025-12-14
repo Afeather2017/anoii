@@ -9,7 +9,7 @@
 EventLoop loop{};
 void NewConn(std::shared_ptr<TcpConnection> conn,
              int sockfd,
-             const InetAddr &peer) {
+             const InetAddr& peer) {
   auto addr = GetLocalAddr(sockfd);
   conn = std::make_shared<TcpConnection>(&loop, sockfd, 0, addr, peer);
   conn->SetConnectionCallback([](std::shared_ptr<TcpConnection>) {});
@@ -18,7 +18,7 @@ void NewConn(std::shared_ptr<TcpConnection> conn,
   conn->Shutdown();
   loop.QueueInLoop([] { loop.Quit(); });
 }
-int main(int argc, char **argv) {
+int main(int argc, char** argv) {
   if (argc < 3) {
     return 0;
   }
@@ -27,7 +27,7 @@ int main(int argc, char **argv) {
   Connector ctr{&loop, addr};
   std::shared_ptr<TcpConnection> conn;
   ctr.SetNewConnCb(
-      [&conn](int fd, const InetAddr &peer) { NewConn(conn, fd, peer); });
+      [&conn](int fd, const InetAddr& peer) { NewConn(conn, fd, peer); });
   ctr.Start();
   loop.Loop();
   // 2. Connector析构后，Timer也要取消

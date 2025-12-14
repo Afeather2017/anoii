@@ -11,7 +11,7 @@
 #include "event_loop.h"
 #include "logger.h"
 
-EPoller::EPoller(EventLoop *loop, size_t size_hint)
+EPoller::EPoller(EventLoop* loop, size_t size_hint)
     : Poller{loop}, actived_events_(16) {
   epoll_fd_ = epoll_create1(EPOLL_CLOEXEC);
   if (epoll_fd_ < 0) {
@@ -19,7 +19,7 @@ EPoller::EPoller(EventLoop *loop, size_t size_hint)
   }
 }
 
-void EPoller::UpdateChannel(Channel *channel) {
+void EPoller::UpdateChannel(Channel* channel) {
   // 此处channel的index用于表示是否加入了epoll中
   struct epoll_event ev;
   ev.data.ptr = channel;
@@ -38,7 +38,7 @@ void EPoller::UpdateChannel(Channel *channel) {
   }
 }
 
-bool EPoller::RemoveChannel(Channel *channel) {
+bool EPoller::RemoveChannel(Channel* channel) {
   auto iter = fd_channels_.find(channel->GetFd());
   if (iter == fd_channels_.end()) {
     return false;
@@ -55,7 +55,7 @@ bool EPoller::RemoveChannel(Channel *channel) {
   return true;
 }
 
-void EPoller::EPollUpdate(int operation, Channel *ch, struct epoll_event *ev) {
+void EPoller::EPollUpdate(int operation, Channel* ch, struct epoll_event* ev) {
   int err = epoll_ctl(epoll_fd_, operation, ch->GetFd(), ev);
   if (err == 0) {
     Trace("epoll_ctl({},{},{})",
@@ -72,7 +72,7 @@ void EPoller::EPollUpdate(int operation, Channel *ch, struct epoll_event *ev) {
         strerror(errno));
 }
 
-const char *EPoller::EPollOperationAsString(int operation) {
+const char* EPoller::EPollOperationAsString(int operation) {
   switch (operation) {
     case EPOLL_CTL_ADD: return "ADD";
     case EPOLL_CTL_MOD: return "MOD";
@@ -81,7 +81,7 @@ const char *EPoller::EPollOperationAsString(int operation) {
   }
 }
 
-bool EPoller::HasChannel(Channel *ch) const {
+bool EPoller::HasChannel(Channel* ch) const {
   auto iter = fd_channels_.find(ch->GetFd());
   if (iter == fd_channels_.end()) {
     assert(ch->GetIndex() < 0);
@@ -93,7 +93,7 @@ bool EPoller::HasChannel(Channel *ch) const {
   }
 }
 
-void EPoller::PollUntil(int timeout_ms, std::vector<Channel *> *channels) {
+void EPoller::PollUntil(int timeout_ms, std::vector<Channel*>* channels) {
   int size = static_cast<int>(actived_events_.size());
   int num_events =
       epoll_wait(epoll_fd_, actived_events_.data(), size, timeout_ms);
@@ -113,11 +113,11 @@ void EPoller::PollUntil(int timeout_ms, std::vector<Channel *> *channels) {
 EPoller::~EPoller() { close(epoll_fd_); }
 
 void EPoller::FillActivedChannels(int num_events,
-                                  std::vector<Channel *> *channels) {
+                                  std::vector<Channel*>* channels) {
   for (int i = 0; i < num_events; i++) {
     struct epoll_event event = actived_events_[i];
     // event.data是一个union，所以不能够同时使用event.data.ptr与event.data.fd
-    Channel *ch = static_cast<Channel *>(event.data.ptr);
+    Channel* ch = static_cast<Channel*>(event.data.ptr);
     channels->push_back(ch);
     assert(fd_channels_.find(ch->GetFd()) != fd_channels_.end());
     assert(fd_channels_.find(ch->GetFd())->second == event.data.ptr);

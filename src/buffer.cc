@@ -8,7 +8,7 @@
 #include <cstring>
 
 #include "logger.h"
-ssize_t Buffer::ReadFd(int fd, int *err) {
+ssize_t Buffer::ReadFd(int fd, int* err) {
   char extra[65535];
   struct iovec vec[2];
   vec[0].iov_base = data_.data() + tail_;
@@ -38,7 +38,7 @@ void Buffer::Shrink() {
   data_.resize(static_cast<size_t>(tail_));
   data_.shrink_to_fit();
 }
-void Buffer::Append(const char *data, int size) {
+void Buffer::Append(const char* data, int size) {
   EnsureWritableSpace(size);
   std::copy(data, data + size, data_.data() + tail_);
   tail_ += size;
@@ -64,18 +64,18 @@ void Buffer::MoveTo(int index) {
   tail_ = index + tail_ - head_;
   head_ = index;
 }
-void Buffer::Prepend(const char *data, int size) {
+void Buffer::Prepend(const char* data, int size) {
   assert(size <= head_);
   head_ -= size;
   std::copy(data, data + size, data_.data() - head_);
 }
-bool Buffer::StartWith(const char *data, int size) {
+bool Buffer::StartWith(const char* data, int size) {
   if (ReadableBytes() < size) return false;
   return 0 == memcmp(data, begin(), static_cast<size_t>(size));
 }
-ssize_t Buffer::FirstOf(const char *data, int size) {
-  void *start = memmem(begin(), this->size(), data, static_cast<size_t>(size));
-  return start == NULL ? -1 : static_cast<char *>(start) - begin();
+ssize_t Buffer::FirstOf(const char* data, int size) {
+  void* start = memmem(begin(), this->size(), data, static_cast<size_t>(size));
+  return start == NULL ? -1 : static_cast<char*>(start) - begin();
 }
 bool Buffer::Contains(char ch) {
   for (int i = head_; i < tail_; i++) {

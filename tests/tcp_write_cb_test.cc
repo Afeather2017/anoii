@@ -10,8 +10,8 @@
 #include "tcp_connection.h"
 #include "tcp_server.h"
 #include "time_helpers.h"
-EventLoop *loop_srv;
-EventLoop *loop_cli;
+EventLoop* loop_srv;
+EventLoop* loop_cli;
 mstime_t last_send_time = CurrentTimeMs();
 const int kDataLen = 1024 * 1024 * 500;
 char data[kDataLen];
@@ -33,7 +33,7 @@ void ConnCb(std::shared_ptr<TcpConnection> conn) {
     case TcpConnection::kDisconnected: break;
   }
 }
-void ReadCb(std::shared_ptr<TcpConnection> conn, Buffer *buf) {
+void ReadCb(std::shared_ptr<TcpConnection> conn, Buffer* buf) {
   (void)conn;
   buf->Pop(static_cast<int>(buf->size()));
 }

@@ -5,8 +5,8 @@ std::string_view strip(std::string_view sv) {
   while (isspace(sv.back())) sv.remove_suffix(1);
   return sv;
 }
-void tolower(std::string &s) {
-  for (auto &c : s) c = static_cast<char>(::tolower(c));
+void tolower(std::string& s) {
+  for (auto& c : s) c = static_cast<char>(::tolower(c));
 }
 static std::bitset<128> GetTcharBitset() {
   std::bitset<128> tchar_bitset;

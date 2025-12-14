@@ -11,9 +11,9 @@ int main() {
   EventLoop loop{};
   InetAddr bind_addr{1234};
   Acceptor acceptor{&loop, bind_addr};
-  acceptor.SetNewConnectionCallback([](int fd, InetAddr *addr) {
+  acceptor.SetNewConnectionCallback([](int fd, InetAddr* addr) {
     Info("new connection to {}:{}", addr->GetIp(), addr->GetPort());
-    const char *str = "How dare you??";
+    const char* str = "How dare you??";
     auto result = ::write(fd, str, strlen(str));
     (void)result;
     close(fd);

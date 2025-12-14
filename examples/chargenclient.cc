@@ -10,13 +10,13 @@ EventLoop loop{};
 static const int char_size = 127 - 33;
 static char tmp[1024 * 20 / char_size * char_size];
 static char charset[char_size];
-void ReadCb(std::shared_ptr<TcpConnection>, Buffer *buf) {
+void ReadCb(std::shared_ptr<TcpConnection>, Buffer* buf) {
   while (buf->ReadableBytes() >= char_size) {
     assert(0 == memcmp(buf->begin(), charset, sizeof(charset)));
     buf->Pop(char_size);
   }
 }
-int main(int argc, char **argv) {
+int main(int argc, char** argv) {
   if (argc < 3) {
     return 0;
   }

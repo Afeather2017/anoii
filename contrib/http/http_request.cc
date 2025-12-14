@@ -76,7 +76,7 @@ bool HttpRequest::ParseTarget(std::string_view target) {
 //                  *( field-line CRLF )
 //                  CRLF
 //                  [ message-body ]
-void HttpRequest::Process(Buffer *buf) {
+void HttpRequest::Process(Buffer* buf) {
   for (;;) {
     if (state_ == HttpParseState::kExpectStartLine) {
       // start-line     = request-line / status-line
@@ -199,12 +199,12 @@ void HttpRequest::DbgPrint() {
   }
   std::stringstream ss;
   ss << "{\n";
-  for (auto &[k, v] : headers_) {
+  for (auto& [k, v] : headers_) {
     ss << "  " << k << ": " << v << '\n';
   }
   ss << '}';
   std::string args = "{\n";
-  for (auto &[k, v] : arguments_) {
+  for (auto& [k, v] : arguments_) {
     args += "  " + k + '=' + v + '\n';
   }
   args += '}';

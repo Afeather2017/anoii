@@ -11,7 +11,7 @@
 #include "event_loop.h"
 #include "logger.h"
 #include "socket.h"
-void DefaultReadCb(std::shared_ptr<TcpConnection> ptr, Buffer *buf) {
+void DefaultReadCb(std::shared_ptr<TcpConnection> ptr, Buffer* buf) {
   buf->Pop(static_cast<int>(buf->size()));
   Info("tcpid={} called tries call an invalid read cb", ptr->GetId());
 }
@@ -33,11 +33,11 @@ void DefaultHighWatermarkCb(std::shared_ptr<TcpConnection> ptr) {
   ptr->Shutdown();
 }
 
-TcpConnection::TcpConnection(EventLoop *loop,
+TcpConnection::TcpConnection(EventLoop* loop,
                              int sockfd,
                              uint64_t id,
-                             const InetAddr &local,
-                             const InetAddr &peer)
+                             const InetAddr& local,
+                             const InetAddr& peer)
     : loop_{loop}, channel_{loop, sockfd}, local_{local}, peer_{peer} {
   id_ = id;
   fd_ = sockfd;
@@ -85,7 +85,7 @@ void TcpConnection::HandleWrite() {
   // HandleWrite应该是在事件处理中调用的，
   // 为了避免在其他地方调用，这里进行检查
   assert(channel_.IsHandleEvents());
-  char *data = output_buffer_->begin();
+  char* data = output_buffer_->begin();
   int size = output_buffer_->ReadableBytes();
   ssize_t ret = ::write(channel_.GetFd(), data, static_cast<size_t>(size));
   Trace("Write {} byte to {} got ret={}", size, channel_.GetFd(), ret);
@@ -168,7 +168,7 @@ void TcpConnection::HandleError(ssize_t read_ret, int err) {
 //   关闭写完成监听，但是由于HandleWrite是事件处理调用的，它添加了functor
 //   write_cb_，所以在下一次epoll之前会调用write_cb_。此时用户没数据发送，
 //   写监听又关闭了，所以避免了空转。
-void TcpConnection::Send(const char *data, size_t size) {
+void TcpConnection::Send(const char* data, size_t size) {
   // FIXME: 线程安全性不足
   // 调用这个函数后，data需要存在多久？
   // 在当前线程调用，那么就是函数结束后就不需要继续存在了。
@@ -182,7 +182,7 @@ void TcpConnection::Send(const char *data, size_t size) {
 
 void TcpConnection::Send(std::string_view sv) { Send(sv.data(), sv.size()); }
 
-void TcpConnection::SendUnsafe(const char *data, size_t size) {
+void TcpConnection::SendUnsafe(const char* data, size_t size) {
   loop_->AssertIfOutLoopThread();
   assert(write_cb_);
   // 竞态条件：

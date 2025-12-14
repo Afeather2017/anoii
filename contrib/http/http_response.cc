@@ -19,14 +19,14 @@ std::string HttpResponse::StartAndFieldToString() {
     headers_.emplace("content-length", std::to_string(buf_.size()));
   // status-line = HTTP-version SP status-code SP [ reason-phrase ]
   ss << "HTTP/1.1 " << static_cast<int>(status_code_) << " \r\n";
-  for (auto &[k, v] : headers_) {
+  for (auto& [k, v] : headers_) {
     ss << k << ": " << v << "\r\n";
   }
   ss << "\r\n";
   return ss.str();
 }
 
-FileResponse::FileResponse(const std::string &filepath) {
+FileResponse::FileResponse(const std::string& filepath) {
   // ifstream居然可以打开文件夹？？
   // 打开文件夹后.is_open() == true, .good() == true，
   // 但是读取不出来任何内容。

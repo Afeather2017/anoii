@@ -47,10 +47,10 @@ class TestAutoSize final {
   void Run() { loop_.Loop(); }
 
  private:
-  void SrvReadCb(UdpPeer *, InetAddr &, char *data, int size) {
+  void SrvReadCb(UdpPeer*, InetAddr&, char* data, int size) {
     assert(memcmp(buffer_, data, static_cast<size_t>(size)) == 0);
   }
-  void CliReadCb(UdpPeer *, InetAddr &, char *data, int size) {
+  void CliReadCb(UdpPeer*, InetAddr&, char* data, int size) {
     assert(memcmp(buffer_, data, static_cast<size_t>(size)) == 0);
   }
   char buffer_[65536];
@@ -101,11 +101,11 @@ class TestFixxedSize final {
   void Run() { loop_.Loop(); }
 
  private:
-  void SrvReadCb(UdpPeer *, InetAddr &, char *data, int size) {
+  void SrvReadCb(UdpPeer*, InetAddr&, char* data, int size) {
     assert(size <= 4000);
     assert(memcmp(buffer_, data, static_cast<size_t>(size)) == 0);
   }
-  void CliReadCb(UdpPeer *, InetAddr &, char *data, int size) {
+  void CliReadCb(UdpPeer*, InetAddr&, char* data, int size) {
     assert(size <= 4000);
     assert(memcmp(buffer_, data, static_cast<size_t>(size)) == 0);
   }

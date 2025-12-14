@@ -10,7 +10,7 @@
 EventLoop loop{};
 bool first = true;
 uint64_t last = std::numeric_limits<uint64_t>::max();
-void ReadCb(std::shared_ptr<TcpConnection> conn, Buffer *buf) {
+void ReadCb(std::shared_ptr<TcpConnection> conn, Buffer* buf) {
   if (first) {
     first = false;
     buf->StartWith("abcd", 4);
@@ -32,7 +32,7 @@ void ConnCb(std::shared_ptr<TcpConnection> conn) {
     last = std::numeric_limits<uint64_t>::max();
   }
 }
-int main(int argc, char **argv) {
+int main(int argc, char** argv) {
   if (argc < 3) {
     return 0;
   }

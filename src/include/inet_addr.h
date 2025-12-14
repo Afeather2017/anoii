@@ -14,8 +14,8 @@ class InetAddr final {
   InetAddr();
   InetAddr(std::string_view ip, uint16_t port);
   ~InetAddr() = default;
-  struct sockaddr *GetSockAddr() {
-    return reinterpret_cast<struct sockaddr *>(&addr_);
+  struct sockaddr* GetSockAddr() {
+    return reinterpret_cast<struct sockaddr*>(&addr_);
   }
   int GetDomain() const { return addr_.sin_family; }
   uint16_t GetPort() const;
@@ -23,9 +23,9 @@ class InetAddr final {
   std::string GetAddr() const {
     return GetIp() + ':' + std::to_string(GetPort());
   }
-  char *GetAddrBytes();
-  const char *GetAddrBytes() const;
-  bool operator==(const InetAddr &rhs);
+  char* GetAddrBytes();
+  const char* GetAddrBytes() const;
+  bool operator==(const InetAddr& rhs);
 
  private:
   struct sockaddr_in addr_{};
@@ -33,8 +33,8 @@ class InetAddr final {
 namespace std {
 template <>
 struct hash<InetAddr> {
-  auto operator()(const InetAddr &addr) {
-    long long val = *(int *)(addr.GetAddrBytes()) * 0x10000;
+  auto operator()(const InetAddr& addr) {
+    long long val = *(int*)(addr.GetAddrBytes()) * 0x10000;
     val += addr.GetPort();
     return hash<long long>{}(val);
   }

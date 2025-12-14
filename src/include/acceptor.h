@@ -12,23 +12,23 @@ class Acceptor final {
  public:
   DISALLOW_COPY(Acceptor);
   // backlog = 0时，安卓系统中进行网络连接的时候，accept事件无法触发。
-  Acceptor(EventLoop *loop,
-           const InetAddr &addr,
+  Acceptor(EventLoop* loop,
+           const InetAddr& addr,
            int backlog = SOMAXCONN,
            bool reuse_addr = false,
            bool reuse_port = false);
-  void SetNewConnectionCallback(std::function<void(int, InetAddr *)> cb) {
+  void SetNewConnectionCallback(std::function<void(int, InetAddr*)> cb) {
     new_conn_cb_ = std::move(cb);
   }
   void AcceptHandler();
-  Channel *GetChannel() { return &channel_; }
-  const InetAddr &GetAddr() { return addr_; }
+  Channel* GetChannel() { return &channel_; }
+  const InetAddr& GetAddr() { return addr_; }
   ~Acceptor();
 
  private:
   Channel channel_;
   InetAddr addr_;
   int idle_fd_;
-  std::function<void(int peer_fd, InetAddr *perr_addr)> new_conn_cb_;
+  std::function<void(int peer_fd, InetAddr* perr_addr)> new_conn_cb_;
 };
 #endif  // ACCEPTOR_H

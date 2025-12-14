@@ -33,7 +33,7 @@ class Timer {
   friend TimerQueue;
 };
 
-TimerQueue::TimerQueue(EventLoop *loop) : loop_{loop} {
+TimerQueue::TimerQueue(EventLoop* loop) : loop_{loop} {
   loop_->AssertIfOutLoopThread();
   next_timer_id_ = 0;
 }
@@ -54,7 +54,7 @@ void TimerQueue::Cancel(TimerId id) {
   iter->second->Cancel();
 }
 
-void TimerQueue::AddTimerInLoop(mstime_t when, Timer *timer) {
+void TimerQueue::AddTimerInLoop(mstime_t when, Timer* timer) {
   loop_->AssertIfOutLoopThread();
   Debug("Timer {},{} added", when, fmt::ptr(timer));
   assert(timer->timer_id_ > 0);
@@ -68,7 +68,7 @@ void TimerQueue::AddTimerInLoop(mstime_t when, Timer *timer) {
   }
 }
 
-TimerId TimerQueue::AddTimer(std::function<mstime_t(mstime_t)> &&cb,
+TimerId TimerQueue::AddTimer(std::function<mstime_t(mstime_t)>&& cb,
                              mstime_t when) {
   auto id = ++next_timer_id_;
   auto timer = new Timer{std::move(cb), id};

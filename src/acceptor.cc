@@ -12,14 +12,14 @@
 #include "inet_addr.h"
 #include "logger.h"
 #include "socket.h"
-Acceptor::Acceptor(EventLoop *loop,
-                   const InetAddr &addr,
+Acceptor::Acceptor(EventLoop* loop,
+                   const InetAddr& addr,
                    int backlog,
                    bool reuse_addr,
                    bool reuse_port)
     : channel_{loop}, addr_{addr} {
   Trace("loop={} {}:{} backlog={} reuse_addr={} reuse_port={}",
-        (void *)loop,
+        (void*)loop,
         addr.GetIp(),
         addr.GetPort(),
         backlog,

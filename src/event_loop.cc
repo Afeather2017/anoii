@@ -17,8 +17,8 @@
 #include "timer_queue.h"
 // 每个线程只能有一个 EventLoop，反之亦然。
 // 该 thread_local 变量用于帮助实现这一点。
-thread_local EventLoop *loop_of_thread = nullptr;
-EventLoop::EventLoop(const char *poll_type, size_t size_hint)
+thread_local EventLoop* loop_of_thread = nullptr;
+EventLoop::EventLoop(const char* poll_type, size_t size_hint)
     : thread_id_{::gettid()} {
   if (loop_of_thread != nullptr) {
     Fatal("This thread already allocated with an eventloop");
@@ -56,13 +56,13 @@ void EventLoop::Loop() {
 
 bool EventLoop::IsInLoopThread() const { return this == loop_of_thread; }
 
-void EventLoop::UpdateChannel(Channel *channel) {
+void EventLoop::UpdateChannel(Channel* channel) {
   poller_->UpdateChannel(channel);
 }
 
 // 当前线程，则会立马调用回调
 // 其他线程调用，则会唤醒当前线程，待其处理完读写事件之后则会调用回调
-void EventLoop::RunInLoop(const std::function<void()> &cb) {
+void EventLoop::RunInLoop(const std::function<void()>& cb) {
   if (IsInLoopThread()) {
     cb();
   } else {
@@ -70,7 +70,7 @@ void EventLoop::RunInLoop(const std::function<void()> &cb) {
   }
 }
 
-void EventLoop::QueueInLoop(const std::function<void()> &cb) {
+void EventLoop::QueueInLoop(const std::function<void()>& cb) {
   {
     // 此函数可能被其他线程调用，所以上锁
     std::unique_lock guard{pedding_functors_lock_};
@@ -92,7 +92,7 @@ void EventLoop::DoPeddingFunctors() {
     std::lock_guard guard{pedding_functors_lock_};
     calling_functors_.swap(pedding_functors_);
   }
-  for (auto &func : calling_functors_) {
+  for (auto& func : calling_functors_) {
     func();
   }
   // 两个vector可以复用
@@ -104,7 +104,7 @@ void EventLoop::WakeUp() {
   uint64_t t = 1;
   ssize_t n = ::write(wakeup_fd, &t, sizeof(t));
   Trace(
-      "{} Try to waked up by eventfd {}", static_cast<void *>(this), wakeup_fd);
+      "{} Try to waked up by eventfd {}", static_cast<void*>(this), wakeup_fd);
   if (n != sizeof(t)) {
     Error("eventfd write returns {}, expect {}", n, sizeof(t));
   }
@@ -124,7 +124,7 @@ void EventLoop::InitWakeupFd() {
 void EventLoop::HandleWakeUpRead() {
   uint64_t t = 1;
   ssize_t n = ::read(wakeup_fd, &t, sizeof(t));
-  Trace("{} Waked up by eventfd {}", static_cast<void *>(this), wakeup_fd);
+  Trace("{} Waked up by eventfd {}", static_cast<void*>(this), wakeup_fd);
   if (n != sizeof(t)) {
     Error("eventfd read returns {}, expect {}", n, sizeof(t));
   }
@@ -145,7 +145,7 @@ TimerId EventLoop::AddTimer(std::function<mstime_t(mstime_t)> cb,
 
 void EventLoop::CancelTimer(TimerId id) { timer_queue_->Cancel(id); }
 
-void EventLoop::RemoveChannel(Channel *ch) {
+void EventLoop::RemoveChannel(Channel* ch) {
   AssertIfOutLoopThread();
   poller_->RemoveChannel(ch);
 }

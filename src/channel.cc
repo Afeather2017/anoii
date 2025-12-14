@@ -35,7 +35,7 @@ Channel::~Channel() {
   assert(events_ == 0);
   assert(!is_handling_events_);
 }
-void Channel::Reset(EventLoop *loop) {
+void Channel::Reset(EventLoop* loop) {
   assert(events_ == 0);
   assert(!is_handling_events_);
   // 如果构造函数确保了成员都初始化了，
@@ -47,7 +47,7 @@ void Channel::Reset(EventLoop *loop) {
 
 std::string Channel::to_string() {
   char buf[1024];
-  auto p = static_cast<void *>(this);
+  auto p = static_cast<void*>(this);
   int last = sprintf(buf, "%p{fd=%d,events=", p, fd_);
   if (events_ & kReadEvent) last += sprintf(buf + last, "kReadEvent|");
   if (events_ & kWriteEvent) last += sprintf(buf + last, "kWriteEvent|");

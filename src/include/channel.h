@@ -13,14 +13,14 @@ class EventLoop;
 class Channel final {
  public:
   DISALLOW_COPY(Channel);
-  Channel(EventLoop *loop, int fd) : loop_{loop}, fd_{fd} {}
-  Channel(EventLoop *loop) : loop_{loop} {}
+  Channel(EventLoop* loop, int fd) : loop_{loop}, fd_{fd} {}
+  Channel(EventLoop* loop) : loop_{loop} {}
   ~Channel();
   void SetFd(int fd) { fd_ = fd; }
-  void Reset(EventLoop *loop);
+  void Reset(EventLoop* loop);
   void Handle();
   bool IsHandleEvents() { return is_handling_events_; }
-  EventLoop *GetLoop() { return loop_; }
+  EventLoop* GetLoop() { return loop_; }
   void EnableRead() {
     events_ |= static_cast<short>(Channel::kReadEvent);
     Update();
@@ -66,7 +66,7 @@ class Channel final {
   std::function<void()> write_cb_{};
   std::function<void()> close_cb_{};
   std::function<void(long int, int)> error_cb_{};
-  EventLoop *loop_ = nullptr;
+  EventLoop* loop_ = nullptr;
   int fd_ = -1;
   int index_in_poller_ = -1;  // 如果是新Channel，则poller中没有记录它，设置为-1
   short events_ = 0;

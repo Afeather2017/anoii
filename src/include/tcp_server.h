@@ -15,30 +15,30 @@ class Buffer;
 class TcpServer final {
  public:
   DISALLOW_COPY(TcpServer);
-  TcpServer(EventLoop *loop, const InetAddr &addr);
+  TcpServer(EventLoop* loop, const InetAddr& addr);
   ~TcpServer();
   void SetConnectionCallback(
-      const std::function<void(std::shared_ptr<TcpConnection>)> &cb) {
+      const std::function<void(std::shared_ptr<TcpConnection>)>& cb) {
     conn_cb_ = cb;
   }
   void SetReadableCallback(
-      const std::function<void(std::shared_ptr<TcpConnection>, Buffer *)> &cb) {
+      const std::function<void(std::shared_ptr<TcpConnection>, Buffer*)>& cb) {
     readable_cb_ = cb;
   }
   void SetWriteCompleteCallback(
-      const std::function<void(std::shared_ptr<TcpConnection>)> &cb) {
+      const std::function<void(std::shared_ptr<TcpConnection>)>& cb) {
     write_cb_ = cb;
   }
   void SetHighWatermarkCallback(
-      const std::function<void(std::shared_ptr<TcpConnection>)> &cb) {
+      const std::function<void(std::shared_ptr<TcpConnection>)>& cb) {
     watermark_cb_ = cb;
   }
 
  private:
   void RemoveConnection(std::shared_ptr<TcpConnection> conn);
-  void NewConnection(int fd, InetAddr *addr);
+  void NewConnection(int fd, InetAddr* addr);
   std::function<void(std::shared_ptr<TcpConnection>)> conn_cb_;
-  std::function<void(std::shared_ptr<TcpConnection>, Buffer *)> readable_cb_;
+  std::function<void(std::shared_ptr<TcpConnection>, Buffer*)> readable_cb_;
   std::function<void(std::shared_ptr<TcpConnection>)> write_cb_;
   std::function<void(std::shared_ptr<TcpConnection>)> watermark_cb_;
   // 如果没有这个映射，那么当用户不持有std::shared_ptr<TcpConnection>的时候，
@@ -51,8 +51,8 @@ class TcpServer final {
   // 至于为什么非得用id:shared_ptr这种映射，是因为两次获得的shared_ptr的地址可能相同
   // 而单调递增的id则不可能相同
   std::unordered_map<uint64_t, std::shared_ptr<TcpConnection>> id_conn_;
-  EventLoop *loop_{};
-  Acceptor *acceptor_{};
+  EventLoop* loop_{};
+  Acceptor* acceptor_{};
   uint64_t next_id_{};
   bool started_{false};
 };

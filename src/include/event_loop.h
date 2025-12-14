@@ -15,7 +15,7 @@ using TimerId = long long;
 class EventLoop {
  public:
   DISALLOW_COPY(EventLoop);
-  EventLoop(const char *poll_type = "default", size_t size_hint = 0);
+  EventLoop(const char* poll_type = "default", size_t size_hint = 0);
   ~EventLoop();
   void Loop();
   bool IsInLoopThread() const;
@@ -24,10 +24,10 @@ class EventLoop {
       std::terminate();
     }
   }
-  void UpdateChannel(Channel *);
+  void UpdateChannel(Channel*);
   void Quit();
-  void RunInLoop(const std::function<void()> &cb);
-  void QueueInLoop(const std::function<void()> &cb);
+  void RunInLoop(const std::function<void()>& cb);
+  void QueueInLoop(const std::function<void()>& cb);
   void WakeUp();
   // 添加一个timer，在调用后start毫秒后第一次调用。
   // std::function<mstime_t(mstime_t current)> 返回值 <=
@@ -35,14 +35,14 @@ class EventLoop {
   // current表示此次开始处理所有激活的Timer的时间
   TimerId AddTimer(std::function<mstime_t(mstime_t current)>, mstime_t start);
   void CancelTimer(TimerId id);
-  void RemoveChannel(Channel *);
+  void RemoveChannel(Channel*);
 
  private:
   void InitWakeupFd();
   void HandleWakeUpRead();
   void DoPeddingFunctors();
   std::unique_ptr<Poller> poller_;
-  std::vector<Channel *> actived_channels_;
+  std::vector<Channel*> actived_channels_;
   std::unique_ptr<TimerQueue> timer_queue_;
 
   // 供其他线程访问，所以需要上锁

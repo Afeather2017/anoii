@@ -12,7 +12,7 @@
 #include "time_helpers.h"
 class PostGetTest {
  public:
-  std::shared_ptr<HttpResponse> Action(const HttpRequest &req) {
+  std::shared_ptr<HttpResponse> Action(const HttpRequest& req) {
     auto id_iter = req.headers_.find("action-id");
     auto resp = std::make_shared<HttpResponse>();
     if (id_iter == req.headers_.end()) {
@@ -24,7 +24,7 @@ class PostGetTest {
     resp->buf_.Append(GetNowTimeString() + " clicked " + id_iter->second);
     return resp;
   }
-  std::shared_ptr<HttpResponse> Pass(const HttpRequest &) {
+  std::shared_ptr<HttpResponse> Pass(const HttpRequest&) {
     test_completed_ = true;
     auto resp = std::make_shared<HttpResponse>();
     resp->status_code_ = StatusCode::kSuccess;

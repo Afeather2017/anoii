@@ -14,7 +14,7 @@ mstime_t CurrentTimeMs() {
 std::string GetNowTimeString() {
   struct timeval tv;
   gettimeofday(&tv, 0);
-  struct tm *tm_time = localtime(&tv.tv_sec);
+  struct tm* tm_time = localtime(&tv.tv_sec);
   char buffer[80];
   auto size = strftime(buffer, sizeof(buffer), "%Y%m%d %H:%M:%S", tm_time);
   sprintf(buffer + size, ".%03ld", (long)tv.tv_usec / 1000);

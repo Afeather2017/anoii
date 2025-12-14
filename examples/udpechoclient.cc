@@ -5,7 +5,7 @@
 EventLoop loop{};
 InetAddr addr{"127.0.0.1", 9996};
 UdpPeer cli{&loop};
-void ReadCb(UdpPeer *self, InetAddr &peer, char *data, int size) {
+void ReadCb(UdpPeer* self, InetAddr& peer, char* data, int size) {
   std::string_view str(data, size);
   fmt::println("{}", str);
 }

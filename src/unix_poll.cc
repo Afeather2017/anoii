@@ -10,13 +10,12 @@
 #include "channel.h"
 #include "event_loop.h"
 #include "logger.h"
-UPoll::UPoll(EventLoop *loop, size_t size_hint) : Poller{loop} {
+UPoll::UPoll(EventLoop* loop, size_t size_hint) : Poller{loop} {
   // 不能直接构造size。
   plfds_.reserve(size_hint);
 }
 
-void UPoll::PollUntil(int timeout_ms,
-                      std::vector<Channel *> *actived_channels) {
+void UPoll::PollUntil(int timeout_ms, std::vector<Channel*>* actived_channels) {
   loop_->AssertIfOutLoopThread();
   Trace("poll with size={} timeout={}", plfds_.size(), timeout_ms);
   int num_events = ::poll(plfds_.data(), plfds_.size(), timeout_ms);
@@ -33,9 +32,9 @@ void UPoll::PollUntil(int timeout_ms,
   }
 }
 
-void UPoll::FillActivedChannels(
-    int num_events, std::vector<Channel *> *actived_channels) const {
-  for (auto &pollfd : plfds_) {
+void UPoll::FillActivedChannels(int num_events,
+                                std::vector<Channel*>* actived_channels) const {
+  for (auto& pollfd : plfds_) {
     if (num_events <= 0) {
       break;
     }
@@ -53,14 +52,14 @@ void UPoll::FillActivedChannels(
   }
 }
 
-bool UPoll::HasChannel(Channel *channel) const {
+bool UPoll::HasChannel(Channel* channel) const {
   loop_->AssertIfOutLoopThread();
   auto iter = fd_channels_.find(channel->GetFd());
   assert(channel->GetIndex() < static_cast<int>(plfds_.size()));
   return iter != fd_channels_.cend();
 }
 
-void UPoll::UpdateChannel(Channel *channel) {
+void UPoll::UpdateChannel(Channel* channel) {
   loop_->AssertIfOutLoopThread();
   // 新创建的，没有加入到poller中的channel，index必须小于0
   if (channel->GetIndex() < 0) {
@@ -77,7 +76,7 @@ void UPoll::UpdateChannel(Channel *channel) {
     assert(fd_channels_[channel->GetFd()] == channel);
     assert(channel->GetIndex() >= 0);
     assert(channel->GetIndex() < static_cast<int>(plfds_.size()));
-    auto &pfd = plfds_[static_cast<size_t>(channel->GetIndex())];
+    auto& pfd = plfds_[static_cast<size_t>(channel->GetIndex())];
     assert(-(pfd.fd + 1) == channel->GetFd() || channel->GetFd() == pfd.fd);
     pfd.events = channel->GetEvents();
     pfd.revents = 0;  // TODO(afeather):why??
@@ -88,7 +87,7 @@ void UPoll::UpdateChannel(Channel *channel) {
   }
 }
 
-bool UPoll::RemoveChannel(Channel *channel) {
+bool UPoll::RemoveChannel(Channel* channel) {
   loop_->AssertIfOutLoopThread();
   if (channel->GetIndex() < 0) {
     return false;
@@ -99,7 +98,7 @@ bool UPoll::RemoveChannel(Channel *channel) {
   assert(iter->second == channel);
   assert(channel->GetIndex() >= 0);
   assert(channel->GetIndex() < static_cast<int>(plfds_.size()));
-  auto &pfd = plfds_[static_cast<size_t>(channel->GetIndex())];
+  auto& pfd = plfds_[static_cast<size_t>(channel->GetIndex())];
   assert(-(pfd.fd + 1) == channel->GetFd() || channel->GetFd() == pfd.fd);
   fd_channels_.erase(iter);
   if (channel->GetIndex() + 1 < static_cast<int>(plfds_.size())) {

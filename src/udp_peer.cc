@@ -9,7 +9,7 @@
 
 #include "logger.h"
 #include "socket.h"
-UdpPeer::UdpPeer(EventLoop *loop, const InetAddr &addr, unsigned buffer_size)
+UdpPeer::UdpPeer(EventLoop* loop, const InetAddr& addr, unsigned buffer_size)
     // 由于需要多一个字节才可以确保一个包被完整读取了，所以是buffer_size+1
     : buffer_(buffer_size == 0 ? 1473 : buffer_size + 1)
     , channel_{loop}
@@ -28,7 +28,7 @@ UdpPeer::UdpPeer(EventLoop *loop, const InetAddr &addr, unsigned buffer_size)
   channel_.EnableRead();
 }
 
-UdpPeer::UdpPeer(EventLoop *loop, unsigned buffer_size)
+UdpPeer::UdpPeer(EventLoop* loop, unsigned buffer_size)
     // 由于需要多一个字节才可以确保一个包被完整读取了，所以是buffer_size+1
     : buffer_(buffer_size == 0 ? 1473 : buffer_size + 1)
     , channel_{loop}
@@ -47,7 +47,7 @@ void UdpPeer::OnMessage() {
   // 由于公司有强依赖于localhost的UDP socket总是能够发送到对端，
   // 且总是能够收到对端发送的包的代码，所以就写成了尽可能接收数据的形式。
   InetAddr peer{};
-  auto *peer_addr = peer.GetSockAddr();
+  auto* peer_addr = peer.GetSockAddr();
   socklen_t len = sizeof(*peer.GetSockAddr());
   ssize_t size;
   if (!binded_addr_) {
@@ -110,9 +110,9 @@ void UdpPeer::OnMessage() {
   readable_cb_(this, peer, buffer_.data(), static_cast<int>(size));
 }
 
-void UdpPeer::SendTo(const char *data, int size, InetAddr &addr) {
+void UdpPeer::SendTo(const char* data, int size, InetAddr& addr) {
   assert(size > 0);
-  auto *sock_addr = addr.GetSockAddr();
+  auto* sock_addr = addr.GetSockAddr();
   for (;;) {
     ssize_t sent = ::sendto(
         fd_, data, static_cast<size_t>(size), 0, sock_addr, sizeof(*sock_addr));
@@ -168,7 +168,7 @@ void UdpPeer::SendTo(const char *data, int size, InetAddr &addr) {
   }
 }
 
-void UdpPeer::SendTo(std::string_view str, InetAddr &addr) {
+void UdpPeer::SendTo(std::string_view str, InetAddr& addr) {
   SendTo(str.data(), static_cast<int>(str.size()), addr);
 }
 

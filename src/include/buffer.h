@@ -25,13 +25,13 @@ class Buffer {
       , data_(static_cast<size_t>(initial_size)) {
     assert(initial_size >= prepend_size);
   }
-  ssize_t ReadFd(int fd, int *err);
+  ssize_t ReadFd(int fd, int* err);
   void Shrink();
-  void Append(const char *data, int size);
+  void Append(const char* data, int size);
   void Append(std::string_view sv) {
     Append(sv.data(), static_cast<int>(sv.size()));
   }
-  void Prepend(const char *data, int size);
+  void Prepend(const char* data, int size);
   void Prepend(std::string_view sv) {
     Prepend(sv.data(), static_cast<int>(sv.size()));
   }
@@ -39,18 +39,18 @@ class Buffer {
     assert(tail_ - head_ >= size);
     head_ += size;
   }
-  bool StartWith(const char *data, int size);
-  ssize_t FirstOf(const char *data, int size);
+  bool StartWith(const char* data, int size);
+  ssize_t FirstOf(const char* data, int size);
   bool Contains(char ch);
   // 使得还可以连续追加写入size个字节
   void EnsureWritableSpace(int size);
-  char *begin() { return data_.data() + head_; }
+  char* begin() { return data_.data() + head_; }
   int WriteableBytes() {
     return static_cast<int>(data_.size()) - (tail_ - head_);
   }
   int ReadableBytes() { return tail_ - head_; }
   bool Empty() { return head_ == tail_; }
-  char *Data() { return data_.data(); }
+  char* Data() { return data_.data(); }
   size_t size() { return static_cast<size_t>(tail_ - head_); }
 
  private:

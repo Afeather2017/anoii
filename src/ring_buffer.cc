@@ -22,7 +22,7 @@ void Buffer::resize(size_t new_size) {
   // begin       head   tail     old          new
   // or tail == 0, we don't need any modification to head or tail
   if (head_ <= tail_ || tail_ == 0) return;
-  char *begin = buf_.data();
+  char* begin = buf_.data();
   if (new_size - old >= tail_) {
     // senario 2:
     // begin       tail      head     old                           new
@@ -44,7 +44,7 @@ void Buffer::resize(size_t new_size) {
   if (tail_ >= new_size) tail_ -= new_size;
 }
 
-void Buffer::push_back(char *data, size_t dsize) {
+void Buffer::push_back(char* data, size_t dsize) {
   if (size() + dsize + 1 <= buf_.size()) {
     resize(size() + dsize);
   }
@@ -53,7 +53,7 @@ void Buffer::push_back(char *data, size_t dsize) {
   }
 }
 
-void Buffer::push_front(char *data, size_t dsize) {
+void Buffer::push_front(char* data, size_t dsize) {
   if (size() + dsize + 1 <= buf_.size()) {
     resize(size() + dsize);
   }
@@ -62,7 +62,7 @@ void Buffer::push_front(char *data, size_t dsize) {
   }
 }
 
-void Buffer::rpush_front(char *data, size_t dsize) {
+void Buffer::rpush_front(char* data, size_t dsize) {
   if (size() + dsize + 1 <= buf_.size()) {
     resize(size() + dsize);
   }
@@ -101,13 +101,13 @@ void Buffer::_push_front(char data) {
   buf_[--head_] = data;
 }
 
-void Buffer::get_front(char *data, size_t size) {
+void Buffer::get_front(char* data, size_t size) {
   for (size_t i = 0; i < size; i++) {
     data[i] = this->operator[](i);
   }
 }
 
-char &Buffer::operator[](ssize_t index) {
+char& Buffer::operator[](ssize_t index) {
   assert(index < size());
   if (head_ <= tail_) {
     return buf_[index];
@@ -125,7 +125,7 @@ void Buffer::pop_back(size_t n) {
   if (tail_ < 0) tail_ += buf_.size();
 }
 
-ssize_t Buffer::ReadFd(int fd, int *error) {
+ssize_t Buffer::ReadFd(int fd, int* error) {
   char buf[65536];
   ssize_t ret = read(fd, buf, sizeof(buf));
   if (ret < 0) {

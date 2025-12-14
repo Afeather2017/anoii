@@ -59,7 +59,7 @@ InetAddr GetLocalAddr(int sockfd) {
   struct sockaddr_in local;
   socklen_t len = sizeof(struct sockaddr_in);
   int ret =
-      ::getsockname(sockfd, reinterpret_cast<struct sockaddr *>(&local), &len);
+      ::getsockname(sockfd, reinterpret_cast<struct sockaddr*>(&local), &len);
   if (ret < 0) {
     Error("getsockname failed: {}", strerror(errno));
     return {};
@@ -71,7 +71,7 @@ InetAddr GetPeerAddr(int sockfd) {
   struct sockaddr_in peer;
   socklen_t len = sizeof(struct sockaddr_in);
   int ret =
-      ::getpeername(sockfd, reinterpret_cast<struct sockaddr *>(&peer), &len);
+      ::getpeername(sockfd, reinterpret_cast<struct sockaddr*>(&peer), &len);
   if (ret < 0) {
     Error("getsockname failed: {}", strerror(errno));
     return {};
